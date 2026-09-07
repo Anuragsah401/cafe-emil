@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    @apply bg-yumix-bg text-yumix-text antialiased selection:bg-emil-red selection:text-white;
+  }
+
+  h1, h2, h3, h4 {
+    @apply tracking-tight font-bold;
+  }
+}
+
+/* Custom glow utility */
+.yumix-glow, .emil-glow {
+  box-shadow: 0 0 50px -10px rgba(215, 42, 22, 0.35);
+}
+
+.yumix-card-glow:hover, .emil-card-glow:hover {
+  box-shadow: 0 10px 30px -10px rgba(215, 42, 22, 0.25);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #100D0E;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A2224;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D72A16;
+}
+
+/* ========================================================
+   VISIBLE SCROLL FADE ANIMATIONS
+   ======================================================== */
+.fade-up,
+.reveal-init,
+.fade-on-scroll {
+  opacity: 0;
+  transform: translate3d(0, 36px, 0);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.fade-up.is-in-view,
+.fade-up.is-revealed,
+.reveal-init.is-in-view,
+.reveal-init.is-revealed,
+.fade-on-scroll.is-in-view,
+.fade-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Stagger delay helpers for grids */
+.delay-1, .reveal-delay-100 {
+  transition-delay: 80ms;
+}
+.delay-2, .reveal-delay-200 {
+  transition-delay: 160ms;
+}
+.delay-3, .reveal-delay-300 {
+  transition-delay: 240ms;
+}
+.delay-4, .reveal-delay-400 {
+  transition-delay: 320ms;
+}
+.delay-5 {
+  transition-delay: 400ms;
+}
+
+/* ========================================================
+   SMOOTH PAGE TRANSITIONS
+   ======================================================== */
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-page-enter {
+  animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes bounceSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounceSubtle 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-init,
+  .fade-on-scroll,
+  .animate-page-enter,
+  .animate-bounce-subtle {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
