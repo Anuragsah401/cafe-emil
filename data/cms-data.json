@@ -25,7 +25,16 @@
     "indoorCapacity": 130,
     "outdoorCapacity": 80,
     "priceRange": "$$",
-    "servesCuisine": ["Café", "Dansk", "Brunch", "Burgere", "Pasta", "Grill", "Pizza", "Cocktails"],
+    "servesCuisine": [
+      "Café",
+      "Dansk",
+      "Brunch",
+      "Burgere",
+      "Pasta",
+      "Grill",
+      "Pizza",
+      "Cocktails"
+    ],
     "socialLinks": {
       "facebook": "https://www.facebook.com/cafeemil",
       "instagram": "https://www.instagram.com/cafeemil"
@@ -39,7 +48,12 @@
         "open": "10:30",
         "close": "23:00",
         "kitchenClose": "22:30",
-        "daysOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday"]
+        "daysOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday"
+        ]
       },
       {
         "id": "fri-sat",
@@ -47,7 +61,10 @@
         "open": "10:30",
         "close": "00:00",
         "kitchenClose": "23:20",
-        "daysOfWeek": ["Friday", "Saturday"]
+        "daysOfWeek": [
+          "Friday",
+          "Saturday"
+        ]
       },
       {
         "id": "sun",
@@ -55,7 +72,9 @@
         "open": "12:00",
         "close": "23:00",
         "kitchenClose": "22:20",
-        "daysOfWeek": ["Sunday"]
+        "daysOfWeek": [
+          "Sunday"
+        ]
       }
     ],
     "brunchHours": "Alle dage: 10:00 – 14:00",
@@ -146,9 +165,18 @@
       "storyP1": "Hos Café Emil er missionen enkel: at servere ærlig, velsmagende mad lavet på gode råvarer i en varm og uformel atmosfære. Vi tror på, at en god café skal være mere end blot et spisested – det skal være et socialt åndehul.",
       "storyP2": "Uanset om du dumper ind til en hurtig espresso, samler familien til vores kendte brunch i weekenden, eller udfordrer vennerne i backgammon over en kurv varme fritter og kolde øl, er du altid velkommen.",
       "values": [
-        { "title": "Kvalitetsråvarer", "desc": "Friske grøntsager, kvalitetskød og nøje udvalgte oste." },
-        { "title": "Ægte Hygge", "desc": "Afslappet atmosfære, venlig betjening og brætspil til alle." },
-        { "title": "Solrig Terrasse", "desc": "80 udendørs pladser til varme dage og kolde drinks." }
+        {
+          "title": "Kvalitetsråvarer",
+          "desc": "Friske grøntsager, kvalitetskød og nøje udvalgte oste."
+        },
+        {
+          "title": "Ægte Hygge",
+          "desc": "Afslappet atmosfære, venlig betjening og brætspil til alle."
+        },
+        {
+          "title": "Solrig Terrasse",
+          "desc": "80 udendørs pladser til varme dage og kolde drinks."
+        }
       ]
     },
     "kontakt": {
@@ -244,17 +272,23 @@
       "name": "Klassisk Brunch",
       "price": 149,
       "description": "Serveres med et lille glas juice (vælg appelsin, mango eller æble). Ost, pølser, frisk frugt, yoghurt m/müsli, sirup, æg med bacon, pandekager, kage, brød og smør.",
-      "tags": ["Populær", "Serveres 10-14"],
+      "tags": [
+        "Populær",
+        "Serveres 10-14"
+      ],
       "image": "https://cafeemil.dk/wp-content/uploads/2024/12/332323.jpg"
     },
     {
       "id": "brunch-maidens",
       "categoryId": "brunch",
       "name": "Maidens Brunch",
-      "price": 149,
+      "price": 139,
       "description": "Serveres med et lille glas juice (appelsin, mango eller æble). Ost, kyllingepølser, tyrkisk pepperoni (sucuk), frisk frugt, yoghurt m/müsli, sirup, æg, oliven, tyrkisk hvid ost, pandekager, kage, brød og smør.",
-      "tags": ["Husets Specialitet", "Serveres 10-14"],
-      "image": "https://cafeemil.dk/wp-content/uploads/2024/12/emil.jpg"
+      "tags": [
+        "Husets Specialitet",
+        "Serveres 10-14"
+      ],
+      "image": "/uploads/screenshot-2026-08-16-at-20-28-53-1788861408864-rme5dx.png"
     },
     {
       "id": "brunch-toast",
@@ -262,7 +296,9 @@
       "name": "Maidens Toast",
       "price": 79,
       "description": "Ristet toastbrød med smeltet ost og krydret tyrkisk pepperoni (sucuk).",
-      "tags": ["Lille Sult"]
+      "tags": [
+        "Lille Sult"
+      ]
     },
     {
       "id": "burger-big-ben",
@@ -270,7 +306,10 @@
       "name": "Big Ben Burger",
       "price": 172,
       "description": "Cheddar ost og spejlæg. Serveres med salat, tomat, rødløg, syltet agurk og sprøde grovfritter. Vælg okse 180g eller crunch kylling samt dip.",
-      "tags": ["Favorit", "Bestseller"],
+      "tags": [
+        "Favorit",
+        "Bestseller"
+      ],
       "image": "https://cafeemil.dk/wp-content/uploads/2024/12/emil5.jpg"
     },
     {
@@ -279,7 +318,9 @@
       "name": "El Toro Burger",
       "price": 169,
       "description": "Cheddar ost, paprika og krydrede jalapeños. Serveres med salat, tomat, rødløg, syltet agurk og grovfritter.",
-      "tags": ["Spicy"]
+      "tags": [
+        "Spicy"
+      ]
     },
     {
       "id": "burger-lille-havfrue",
@@ -287,7 +328,9 @@
       "name": "Den Lille Havfrue",
       "price": 169,
       "description": "Klassisk velsmag med smeltet cheddar ost, salat, tomat, rødløg, syltet agurk og sprøde grovfritter.",
-      "tags": ["Klassiker"]
+      "tags": [
+        "Klassiker"
+      ]
     },
     {
       "id": "burger-statue-of-liberty",
@@ -295,7 +338,9 @@
       "name": "Statue of Liberty",
       "price": 169,
       "description": "Cheddar ost og chilistegte champignon. Serveres med salat, tomat, rødløg, syltet agurk og grovfritter.",
-      "tags": ["Chef's Pick"]
+      "tags": [
+        "Chef's Pick"
+      ]
     },
     {
       "id": "burger-istanbul",
@@ -303,7 +348,9 @@
       "name": "Istanbul Burger",
       "price": 169,
       "description": "Cheddar ost, tyrkisk pastrami og krydret sucuk. Serveres med salat, tomat, rødløg, syltet agurk og grovfritter.",
-      "tags": ["Signatur"]
+      "tags": [
+        "Signatur"
+      ]
     },
     {
       "id": "sw-kylling",
@@ -311,7 +358,9 @@
       "name": "Kyllingesandwich",
       "price": 159,
       "description": "Mørt kyllingebryst, hummus, frisk salat og mild creme fraiche dressing. Serveres med grovfritter.",
-      "tags": ["Populær"]
+      "tags": [
+        "Populær"
+      ]
     },
     {
       "id": "sw-club",
@@ -319,7 +368,9 @@
       "name": "Clubsandwich",
       "price": 159,
       "description": "Klassisk sandwich med kylling, sprød bacon, guacamole og cremet karrydressing. Serveres med grovfritter.",
-      "tags": ["Klassiker"]
+      "tags": [
+        "Klassiker"
+      ]
     },
     {
       "id": "sw-vegetar",
@@ -327,7 +378,9 @@
       "name": "Vegetarisk Sandwich",
       "price": 159,
       "description": "Serveres med creme fraiche, fyldig hummus og hjemmelavet tzatziki samt sprøde grovfritter og salat.",
-      "tags": ["Vegetarisk"]
+      "tags": [
+        "Vegetarisk"
+      ]
     },
     {
       "id": "sw-laks",
@@ -335,7 +388,9 @@
       "name": "Sandwich med Røget Laks",
       "price": 159,
       "description": "Kvalitetsrøget laks, frisk salat og hjemmelavet tzatziki. Serveres med sprøde grovfritter.",
-      "tags": ["Fisk"]
+      "tags": [
+        "Fisk"
+      ]
     },
     {
       "id": "sw-ribeye",
@@ -343,7 +398,9 @@
       "name": "Ribeye Sandwich",
       "price": 159,
       "description": "Mørt grillet ribeye-kød, grøn pesto, sødmefuld løgmarmelade og tzatziki. Serveres med grovfritter.",
-      "tags": ["Luksus"]
+      "tags": [
+        "Luksus"
+      ]
     },
     {
       "id": "grill-ribeye",
@@ -351,7 +408,9 @@
       "name": "Ribeye Steak (300g)",
       "price": 320,
       "description": "300 g saftig og mør ribeye bøf. Serveres med sprøde grovfritter, sæsonens garniture og valg mellem bearnaise- eller pebersauce.",
-      "tags": ["Premium Steak"],
+      "tags": [
+        "Premium Steak"
+      ],
       "image": "https://cafeemil.dk/wp-content/uploads/2024/12/1212123-776x1024.jpg"
     },
     {
@@ -360,7 +419,9 @@
       "name": "Klassisk Hakkebøf (250g)",
       "price": 210,
       "description": "250 g hakket oksekød med god stegeskorpe. Serveres med grovfritter, garniture og valg mellem bearnaise- eller pebersauce.",
-      "tags": ["Klassisk"]
+      "tags": [
+        "Klassisk"
+      ]
     },
     {
       "id": "grill-kylling",
@@ -368,7 +429,9 @@
       "name": "Kyllingeret",
       "price": 189,
       "description": "Mørt, saftigt kyllingebryst. Serveres med sprøde pommes frites, fyldig hummus og frisk garniture.",
-      "tags": ["Populær"]
+      "tags": [
+        "Populær"
+      ]
     },
     {
       "id": "grill-enchilada",
@@ -376,7 +439,9 @@
       "name": "Mexicansk Enchilada",
       "price": 169,
       "description": "Sammenrullet ovnbagt tortilla fyldt med kød (vælg mellem kylling eller oksekød) og smelteost. Serveres med salsa, creme fraiche, guacamole og salat.",
-      "tags": ["Mexicansk"]
+      "tags": [
+        "Mexicansk"
+      ]
     },
     {
       "id": "grill-nachos",
@@ -384,7 +449,10 @@
       "name": "Klassiske Nachos",
       "price": 159,
       "description": "Sprøde majschips gratineret med smelteost, oliven og jalapeños. Serveres med guacamole, salsa og creme fraiche.",
-      "tags": ["Delevenlig", "Vegetarisk"]
+      "tags": [
+        "Delevenlig",
+        "Vegetarisk"
+      ]
     },
     {
       "id": "grill-nachos-kylling",
@@ -392,7 +460,10 @@
       "name": "Nachos med Kylling",
       "price": 169,
       "description": "Sprøde majschips gratineret med kylling og smelteost, oliven og jalapeños. Serveres med guacamole, salsa og creme fraiche.",
-      "tags": ["Delevenlig", "Bestseller"]
+      "tags": [
+        "Delevenlig",
+        "Bestseller"
+      ]
     },
     {
       "id": "pizza-4-cheeses",
@@ -400,7 +471,10 @@
       "name": "Four Italian Cheeses Pizza",
       "price": 152,
       "description": "Buffalo mozzarella DOP, gorgonzola, stracchino ost, fontina ost, frisk basilikum og italiensk ekstra jomfruolivenolie.",
-      "tags": ["Italiensk", "Vegetarisk"],
+      "tags": [
+        "Italiensk",
+        "Vegetarisk"
+      ],
       "image": "https://cafeemil.dk/wp-content/uploads/2024/12/cafe-emil-pizza-1024x1024.jpg"
     },
     {
@@ -409,7 +483,9 @@
       "name": "Vegetarian Pizza",
       "price": 152,
       "description": "Mozzarella fiordilatte, grillet courgette, grillet aubergine, solmodne tomater, basilikum og italiensk ekstra jomfruolivenolie.",
-      "tags": ["Vegetarisk"]
+      "tags": [
+        "Vegetarisk"
+      ]
     },
     {
       "id": "pizza-bufala",
@@ -417,7 +493,9 @@
       "name": "Bufala DOP Pizza",
       "price": 152,
       "description": "Buffalo mozzarella DOP, fyldig tomatsauce, frisk basilikum og italiensk ekstra jomfruolivenolie.",
-      "tags": ["Klassisk Italiensk"]
+      "tags": [
+        "Klassisk Italiensk"
+      ]
     },
     {
       "id": "pizza-istanbul",
@@ -425,7 +503,9 @@
       "name": "Pizza Istanbul",
       "price": 152,
       "description": "Mozzarella, stracchino ost, fontina ost og krydret tyrkisk sucuk pølse.",
-      "tags": ["Specialitet"]
+      "tags": [
+        "Specialitet"
+      ]
     },
     {
       "id": "salat-kylling",
@@ -433,7 +513,9 @@
       "name": "Kyllingesalat",
       "price": 155,
       "description": "Frisk sprød salat med kylling, sprødstegt bacon og husets cremede karrydressing.",
-      "tags": ["Populær"]
+      "tags": [
+        "Populær"
+      ]
     },
     {
       "id": "salat-laks",
@@ -441,7 +523,10 @@
       "name": "Laksesalat",
       "price": 155,
       "description": "Røget kvalitetslaks, frisk moden avocado og sæsonens sprøde salatblanding.",
-      "tags": ["Fisk", "Sund"]
+      "tags": [
+        "Fisk",
+        "Sund"
+      ]
     },
     {
       "id": "salat-tun",
@@ -449,7 +534,9 @@
       "name": "Tunmoussésalat",
       "price": 155,
       "description": "Hjemmelavet cremet tunmousse serveret på en bund af frisk grøn salat.",
-      "tags": ["Fisk"]
+      "tags": [
+        "Fisk"
+      ]
     },
     {
       "id": "salat-gedeost",
@@ -457,7 +544,9 @@
       "name": "Gedeost Salat",
       "price": 155,
       "description": "Lun gedeost, ristede pinjekerner og frisk basilikumdressing.",
-      "tags": ["Vegetarisk"]
+      "tags": [
+        "Vegetarisk"
+      ]
     },
     {
       "id": "salat-rejer",
@@ -465,7 +554,9 @@
       "name": "Rejesalat",
       "price": 155,
       "description": "Møre grønlandske rejer, frisk avocado og aromatisk skaldyrsdressing.",
-      "tags": ["Fisk"]
+      "tags": [
+        "Fisk"
+      ]
     },
     {
       "id": "salat-emils",
@@ -473,7 +564,9 @@
       "name": "Emils Salat",
       "price": 165,
       "description": "Stegte kæmperejer, rødløg, avocado, frisk basilikum, citronsaft og jomfru olivenolie.",
-      "tags": ["Signatur"]
+      "tags": [
+        "Signatur"
+      ]
     },
     {
       "id": "pasta-ret",
@@ -481,7 +574,9 @@
       "name": "Pasta Emil",
       "price": 179,
       "description": "Vælg mellem kylling eller vegetar. Frisk pasta vendt i en cremet tomatflødesauce med champignon og friskrevet parmesan.",
-      "tags": ["Bestseller"]
+      "tags": [
+        "Bestseller"
+      ]
     },
     {
       "id": "pasta-lasagne",
@@ -489,7 +584,9 @@
       "name": "Hjemmelavet Lasagne",
       "price": 179,
       "description": "Klassisk ovnbagt lasagne med rig kødsauce, bechamelsauce og smeltet ost. Serveres med frisk salat.",
-      "tags": ["Klassiker"]
+      "tags": [
+        "Klassiker"
+      ]
     },
     {
       "id": "pasta-stjerneskud",
@@ -497,7 +594,9 @@
       "name": "Traditionelt Stjerneskud",
       "price": 189,
       "description": "Rødspættefilet, dampet torsk, rejer, kaviar, thousand island dressing, citron og ristet brød.",
-      "tags": ["Dansk Klassiker"]
+      "tags": [
+        "Dansk Klassiker"
+      ]
     },
     {
       "id": "pasta-rodspaette",
@@ -505,7 +604,9 @@
       "name": "Paneret Rødspættefilet",
       "price": 169,
       "description": "To sprødstegte rødspættefileter serveret med frisk salat, remoulade og pommes frites.",
-      "tags": ["Fisk"]
+      "tags": [
+        "Fisk"
+      ]
     },
     {
       "id": "pasta-omelet-kylling",
@@ -513,7 +614,9 @@
       "name": "Omelet med Kylling",
       "price": 169,
       "description": "Luftig æggeomelet tilberedt med mørt kyllingekød og friske urter.",
-      "tags": ["Proteinrig"]
+      "tags": [
+        "Proteinrig"
+      ]
     },
     {
       "id": "pasta-omelet-spansk",
@@ -521,7 +624,9 @@
       "name": "Spansk Omelet",
       "price": 169,
       "description": "Små krydderkartofler, søde cherrytomater, peberfrugt og smeltet ost.",
-      "tags": ["Vegetarisk"]
+      "tags": [
+        "Vegetarisk"
+      ]
     },
     {
       "id": "dessert-pandekage",
@@ -529,7 +634,9 @@
       "name": "Pandekager med Is",
       "price": 89,
       "description": "Lune, nylavede pandekager serveret med cremet vaniljeis og chokoladesauce.",
-      "tags": ["Sød Fristelse"]
+      "tags": [
+        "Sød Fristelse"
+      ]
     },
     {
       "id": "dessert-nutella",
@@ -537,7 +644,9 @@
       "name": "Nutella Pandekage",
       "price": 95,
       "description": "Lune pandekager rigt smurt med Nutella og serveret med vaniljeis.",
-      "tags": ["Favorit"]
+      "tags": [
+        "Favorit"
+      ]
     },
     {
       "id": "dessert-bananasplit",
@@ -545,7 +654,9 @@
       "name": "Klassisk Bananasplit",
       "price": 79,
       "description": "Frisk banan, tre kugler is, flødeskum og chokoladesauce.",
-      "tags": ["Klassiker"]
+      "tags": [
+        "Klassiker"
+      ]
     },
     {
       "id": "dessert-vaffel",
@@ -553,7 +664,9 @@
       "name": "Belgisk Vaffel",
       "price": 95,
       "description": "Varm, sprød belgisk vaffel serveret med to kugler is og flødeskum.",
-      "tags": ["Populær"]
+      "tags": [
+        "Populær"
+      ]
     },
     {
       "id": "dessert-kunefe",
@@ -561,7 +674,9 @@
       "name": "Maidens Künefe",
       "price": 89,
       "description": "Autentisk tyrkisk ovnbagt künefe med smeltet ostetråd, pistacie, sød sirup og vaniljeis.",
-      "tags": ["Husets Specialitet"]
+      "tags": [
+        "Husets Specialitet"
+      ]
     },
     {
       "id": "dessert-cheesecake",
@@ -569,7 +684,9 @@
       "name": "Cheesecake",
       "price": 69,
       "description": "Dagens cheesecake. Se det aktuelle udvalg i vores kageskab ved baren.",
-      "tags": ["Kageskab"]
+      "tags": [
+        "Kageskab"
+      ]
     },
     {
       "id": "kid-dippers",
@@ -577,7 +694,9 @@
       "name": "Chicken Dippers (Børnemenu)",
       "price": 99,
       "description": "Sprøde kyllingestykker serveret med pommes frites, ketchup og en lille overraskelse.",
-      "tags": ["Børn"]
+      "tags": [
+        "Børn"
+      ]
     },
     {
       "id": "kid-burger",
@@ -585,7 +704,9 @@
       "name": "Børneburger",
       "price": 99,
       "description": "Mild burgerbøf i blød bolle, serveret med pommes frites, ketchup og en lille overraskelse.",
-      "tags": ["Børn"]
+      "tags": [
+        "Børn"
+      ]
     },
     {
       "id": "kid-pasta",
@@ -593,7 +714,9 @@
       "name": "Børnepasta m. Kylling",
       "price": 99,
       "description": "Børnevenlig pasta med kylling og mild sauce, inkl. lille overraskelse.",
-      "tags": ["Børn"]
+      "tags": [
+        "Børn"
+      ]
     },
     {
       "id": "snack-groft-fritter",
@@ -601,7 +724,9 @@
       "name": "Sprøde Grovfritter",
       "price": 99,
       "description": "Stor kurv med gyldne, rustikke grovfritter. Vælg dip: ketchup, mayo eller chilimayo.",
-      "tags": ["Delevenlig"]
+      "tags": [
+        "Delevenlig"
+      ]
     },
     {
       "id": "snack-sweet-potato",
@@ -609,7 +734,9 @@
       "name": "Sweet Potato Fries",
       "price": 99,
       "description": "Sprøde søde kartoffelfritter med valgfri dip.",
-      "tags": ["Populær"]
+      "tags": [
+        "Populær"
+      ]
     },
     {
       "id": "drink-espresso",
@@ -617,7 +744,9 @@
       "name": "Espresso / Americano",
       "price": 42,
       "description": "Brygget på friskristede kvalitetsbønner.",
-      "tags": ["Kaffe"]
+      "tags": [
+        "Kaffe"
+      ]
     },
     {
       "id": "drink-cappuccino",
@@ -625,7 +754,9 @@
       "name": "Cappuccino / Café Latte",
       "price": 55,
       "description": "Cremet, nydampet mælk med fyldig espresso. Mulighed for sirup (hasselnød, vanilje, karamel +4 kr.).",
-      "tags": ["Kaffe"],
+      "tags": [
+        "Kaffe"
+      ],
       "image": "https://cafeemil.dk/wp-content/uploads/2024/12/kaffe-1024x768.jpg"
     },
     {
@@ -634,7 +765,9 @@
       "name": "English Teashop Organic Te",
       "price": 49,
       "description": "Vælg mellem Mint Tea, Green Tea, Lemongrass Citrus & Ginger, Earl Grey, White Tea Blueberry eller Super Berries.",
-      "tags": ["Økologisk Te"]
+      "tags": [
+        "Økologisk Te"
+      ]
     },
     {
       "id": "drink-aperol",
@@ -642,7 +775,10 @@
       "name": "Aperol Spritz",
       "price": 105,
       "description": "Aperol, prosecco, danskvand og en frisk appelsinskive.",
-      "tags": ["Cocktail", "Populær"]
+      "tags": [
+        "Cocktail",
+        "Populær"
+      ]
     },
     {
       "id": "drink-mojito",
@@ -650,7 +786,9 @@
       "name": "Mojito (Klassisk / Strawberry / Melon)",
       "price": 105,
       "description": "Lys rom, frisk mynte, lime, rørsukker og danskvand.",
-      "tags": ["Cocktail"]
+      "tags": [
+        "Cocktail"
+      ]
     },
     {
       "id": "drink-fadol",
@@ -658,7 +796,9 @@
       "name": "Fadøl (Royal Classic / Pilsner)",
       "price": 65,
       "description": "Kold, velskænket fadøl. Lille 54,- / Mellem 65,- / Stor 79,-.",
-      "tags": ["Fadøl"]
+      "tags": [
+        "Fadøl"
+      ]
     },
     {
       "id": "drink-specialol",
@@ -666,7 +806,9 @@
       "name": "Specialøl (Schiøtz / Anarkist / Edelweiss)",
       "price": 71,
       "description": "Vælg mellem Gylden IPA, Mørk Mumme, Brown Ale eller Bloody Weizen 50 cl.",
-      "tags": ["Specialøl"]
+      "tags": [
+        "Specialøl"
+      ]
     },
     {
       "id": "drink-vin",
@@ -674,7 +816,9 @@
       "name": "Husets Vin (Rød / Hvid / Rosé)",
       "price": 69,
       "description": "Friske, frugtige og velafstemte vine. Glas 69,- / Flaske 299,-.",
-      "tags": ["Vin"]
+      "tags": [
+        "Vin"
+      ]
     },
     {
       "id": "drink-lemonade",
@@ -682,10 +826,19 @@
       "name": "Frisk Frozen Lemonade",
       "price": 75,
       "description": "Old Fashion eller Jordbær, blendet med isterninger, hyldeblomst og frisk mynte.",
-      "tags": ["Alkoholfri", "Forfriskende"]
+      "tags": [
+        "Alkoholfri",
+        "Forfriskende"
+      ]
     }
   ],
   "gallery": [
+    {
+      "id": "g-1788861220292-9uyq",
+      "title": "logo",
+      "category": "drinks",
+      "src": "/uploads/screenshot-2026-08-16-at-20-39-40-1788861220290-dxgtok.png"
+    },
     {
       "id": "g1",
       "title": "Hyggelige rammer indenfor",
@@ -827,4 +980,3 @@
     }
   }
 }
-

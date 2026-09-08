@@ -161,3 +161,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Kunne ikke slette filen' }, { status: 500 });
   }
 }
+

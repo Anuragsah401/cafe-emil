@@ -329,3 +329,4 @@ export default function MediaLibrary({ onSelectImage }: MediaLibraryProps) {
     </div>
   );
 }
+
