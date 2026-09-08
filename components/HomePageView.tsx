@@ -36,50 +36,36 @@ export default function HomePageView({ cms }: HomePageViewProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [videoClarity, setVideoClarity] = useState<'vivid' | 'cinematic'>('vivid');
 
-  const { restaurant, openingHours, sections, menuCategories, menuItems, gallery } = cms;
+  const { restaurant, openingHours, sections, menuCategories, menuItems, gallery, faqs: cmsFaqs, testimonials: cmsTestimonials } = cms;
 
   // Selected dishes for preview
   const previewDishes = menuItems
     .filter((item) => item.categoryId === selectedCategoryTab)
     .slice(0, 6);
 
-  const faqs = [
+  const faqs = cmsFaqs && cmsFaqs.length > 0 ? cmsFaqs : [
     {
+      id: 'faq-1',
       q: 'Hvornår serverer I brunch?',
       a: 'Vi serverer vores populære Klassiske Brunch og Maidens Brunch alle ugens 7 dage fra kl. 10:00 til 14:00. Begge serveres inklusiv et lille glas juice for kun 149 kr.',
     },
     {
+      id: 'faq-2',
       q: 'Kan man booke bord på forhånd?',
       a: 'Ja, du kan nemt booke bord online via vores SeatBooking-integration her på siden, eller ringe direkte på 36 44 74 41. Ved selskaber over 8 personer samt fredag/lørdag aften anbefales det at booke i god tid.',
     },
-    {
-      q: 'Kan man sidde udendørs på terrassen?',
-      a: 'Ja! Vi har en skøn, solrig udendørs terrasse med plads til op til 80 personer. I sommerhalvåret er det et af Valbys mest populære steder at nyde frokost, drinks og kaffe i solen.',
-    },
-    {
-      q: 'Må man låne jeres brætspil gratis?',
-      a: 'Ja, absolut! Vi har et bredt udvalg af brætspil – fra Backgammon og skak til klassiske selskabsspil – som alle vores gæster frit kan låne til hyggelige stunder over mad og drikke.',
-    },
-    {
-      q: 'Hvor mange gæster kan I have til private selskaber?',
-      a: 'Vi har plads til op til 130 gæster indendørs og 80 gæster på terrassen. Vi skræddersyr gerne særlige selskabsmenuer til fødselsdage, konfirmationer, jubilæer og firmafester.',
-    },
   ];
 
-  const testimonials = [
+  const testimonials = cmsTestimonials && cmsTestimonials.length > 0 ? cmsTestimonials : [
     {
+      id: 'test-1',
       name: 'Camilla Lindegaard',
       role: 'Lokal gæst fra Valby',
       rating: 5,
       quote: 'Valbys bedste brunch uden tvivl! Deres Maidens Brunch med de tyrkiske oste og sucuk er simpelthen enestående. Hyggelig atmosfære og super sød betjening hver gang.',
     },
     {
-      name: 'Mads & Frederik',
-      role: 'Stamgæster',
-      rating: 5,
-      quote: 'Perfekt kombination af fantastiske burgere, kolde fadøl og brætspil. Vi elsker at komme her i weekenden og udfordre hinanden i backgammon over en kurv grovfritter.',
-    },
-    {
+      id: 'test-2',
       name: 'Henrik Vestergaard',
       role: 'Firma-arrangement',
       rating: 5,

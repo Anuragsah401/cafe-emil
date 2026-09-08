@@ -80,6 +80,20 @@ export interface GalleryItem {
   src: string;
 }
 
+export interface FaqItem {
+  id: string;
+  q: string;
+  a: string;
+}
+
+export interface TestimonialItem {
+  id: string;
+  name: string;
+  role: string;
+  rating: number;
+  quote: string;
+}
+
 export interface PageSeo {
   title: string;
   description: string;
@@ -137,14 +151,28 @@ export interface CmsData {
       orderPhone: string;
       pickupAddress: string;
     };
+    omOs: {
+      title: string;
+      lead: string;
+      storyP1: string;
+      storyP2: string;
+      values: { title: string; desc: string }[];
+    };
+    kontakt: {
+      title: string;
+      description: string;
+      transitInfo: string;
+      parkingInfo: string;
+    };
   };
   menuCategories: MenuCategory[];
   menuItems: MenuItem[];
   gallery: GalleryItem[];
+  faqs: FaqItem[];
+  testimonials: TestimonialItem[];
   seo: Record<string, PageSeo>;
 }
 
 export function getCmsData(): CmsData {
   return cmsData as unknown as CmsData;
 }
-
