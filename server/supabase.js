@@ -30,19 +30,19 @@ function getSupabase() {
 }
 
 // Fallback path to local seed data
-const serverCmsPath = path.join(__dirname, 'data', 'cms-data.json');
-const frontendCmsPath = path.join(__dirname, '..', 'frontend', 'data', 'cms-data.json');
+const serverCmsPath = path.join(__dirname, "data", "cms-data.json");
+const frontendCmsPath = path.join(__dirname, "..", "frontend", "data", "cms-data.json");
 
 function getLocalCmsData() {
   try {
     if (fs.existsSync(serverCmsPath)) {
-      return JSON.parse(fs.readFileSync(serverCmsPath, 'utf8'));
+      return JSON.parse(fs.readFileSync(serverCmsPath, "utf8"));
     }
     if (fs.existsSync(frontendCmsPath)) {
-      return JSON.parse(fs.readFileSync(frontendCmsPath, 'utf8'));
+      return JSON.parse(fs.readFileSync(frontendCmsPath, "utf8"));
     }
   } catch (err) {
-    console.error('Error reading local cms-data.json fallback:', err);
+    console.error("Error reading local cms-data.json fallback:", err);
   }
   return null;
 }

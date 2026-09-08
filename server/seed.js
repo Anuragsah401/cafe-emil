@@ -16,15 +16,15 @@ async function runSeed() {
   console.log("Supabase credentials found. Seeding database...");
 
   // 1. Seed CMS Data
-  const serverCms = path.join(__dirname, 'data', 'cms-data.json');
-  const frontendCms = path.join(__dirname, '..', 'frontend', 'data', 'cms-data.json');
+  const serverCms = path.join(__dirname, "data", "cms-data.json");
+  const frontendCms = path.join(__dirname, "..", "frontend", "data", "cms-data.json");
   const cmsFilePath = fs.existsSync(serverCms) ? serverCms : frontendCms;
 
   if (fs.existsSync(cmsFilePath)) {
-    const raw = JSON.parse(fs.readFileSync(cmsFilePath, 'utf8'));
+    const raw = JSON.parse(fs.readFileSync(cmsFilePath, "utf8"));
     console.log(`Seeding CMS data (${raw.menuItems?.length || 0} menu items)...`);
     await saveCmsData(raw);
-    console.log('✓ CMS content seeded successfully into table cms_content!');
+    console.log("✓ CMS content seeded successfully into table cms_content!");
   }
 
   // 2. Seed Admin User

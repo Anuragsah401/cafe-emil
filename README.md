@@ -78,3 +78,4 @@ npm run build          # Builds frontend
 Default Admin Credentials:
 - **Username**: `admin`
 - **Password**: `CafeEmil2025!`
+
