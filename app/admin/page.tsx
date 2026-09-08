@@ -219,7 +219,7 @@ export default function AdminDashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#100D0E] text-zinc-100 pt-24 pb-20 selection:bg-emil-red selection:text-white">
+    <div className="min-h-screen bg-[#100D0E] text-zinc-100 pt-8 sm:pt-10 pb-20 selection:bg-emil-red selection:text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
         {/* ========================================================

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { Volume2, VolumeX, Play, Pause, Coffee, Music2, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
 
 interface SoundTrack {
@@ -36,6 +37,7 @@ const TRACKS: SoundTrack[] = [
 ];
 
 export default function AmbientSoundPlayer() {
+  const pathname = usePathname();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [volume, setVolume] = useState(0.35); // Gentle, comfortable 35% default
@@ -184,6 +186,10 @@ export default function AmbientSoundPlayer() {
     setShowInvitation(false);
     localStorage.setItem('cafeemil_sound_dismissed', 'true');
   };
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <>

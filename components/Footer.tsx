@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { MapPin, Phone, Mail, Clock, ShieldCheck, ArrowUpRight, Heart, Flame } from 'lucide-react';
 import { CmsData } from '@/lib/cms';
 
@@ -10,7 +11,12 @@ interface FooterProps {
 }
 
 export default function Footer({ cms }: FooterProps) {
+  const pathname = usePathname();
   const { restaurant, openingHours } = cms;
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <footer className="bg-[#090C10] text-white pt-20 pb-12 border-t border-white/10">

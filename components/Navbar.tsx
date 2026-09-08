@@ -41,6 +41,11 @@ export default function Navbar({ restaurant }: NavbarProps) {
     { href: '/kontakt', label: 'Kontakt' },
   ];
 
+  // Do not display website public navbar on admin pages
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <>
       <header className="fixed top-4 left-0 right-0 z-40 flex justify-center px-4 sm:px-6 pointer-events-none">

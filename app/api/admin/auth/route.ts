@@ -149,3 +149,4 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Kunne ikke ændre adgangskode' }, { status: 500 });
   }
 }
+

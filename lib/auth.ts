@@ -117,3 +117,4 @@ export function isAuthenticated(): boolean {
 }
 
 export { AUTH_COOKIE_NAME, SESSION_MAX_AGE };
+

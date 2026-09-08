@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Calendar, Phone, Utensils, MapPin } from 'lucide-react';
 import { RestaurantInfo } from '@/lib/cms';
 import SeatBookingModal from './SeatBookingModal';
@@ -11,7 +12,12 @@ interface MobileFloatingBarProps {
 }
 
 export default function MobileFloatingBar({ restaurant }: MobileFloatingBarProps) {
+  const pathname = usePathname();
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <>
