@@ -17,9 +17,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    // Require valid admin session for modifying website content
     const cookieStore = cookies();
     const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+
     if (!verifySessionToken(token)) {
       return NextResponse.json(
         { error: 'Uautoriseret adgang. Log ind som administrator for at gemme ændringer.' },
@@ -28,13 +28,13 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const updated = await updateCmsData(body);
+    const updated = await updateCmsData(body, token);
 
     // Invalidate Next.js cache across all pages immediately
     try {
       revalidatePath('/', 'layout');
     } catch (e) {
-      console.warn('Cache revalidation notice:', e);
+      //
     }
 
     return NextResponse.json({ success: true, data: updated });

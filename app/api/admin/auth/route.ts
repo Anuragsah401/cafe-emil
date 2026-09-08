@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import {
   validateLogin,
-  createSessionToken,
+  changePasswordWithBackend,
   verifySessionToken,
-  saveCredentials,
   AUTH_COOKIE_NAME,
   SESSION_MAX_AGE,
 } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 // GET: Check if admin is currently authenticated
 export async function GET() {
@@ -38,24 +39,23 @@ export async function POST(request: Request) {
       );
     }
 
-    const isValid = await validateLogin(username, password);
-    if (!isValid) {
+    const result = await validateLogin(username, password);
+    if (!result.success || !result.token) {
       return NextResponse.json(
-        { error: 'Ugyldigt brugernavn eller adgangskode' },
+        { error: result.error || 'Ugyldigt brugernavn eller adgangskode' },
         { status: 401 }
       );
     }
 
-    const token = createSessionToken(username);
     const response = NextResponse.json({
       success: true,
       message: 'Login gennemført',
     });
 
-    // Set secure HttpOnly cookie
+    // Set secure HttpOnly cookie with JWT token
     response.cookies.set({
       name: AUTH_COOKIE_NAME,
-      value: token,
+      value: result.token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -100,7 +100,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { currentPassword, newPassword, username } = body;
+    const { currentPassword, newPassword } = body;
 
     if (!currentPassword || !newPassword) {
       return NextResponse.json(
@@ -116,19 +116,15 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Verify current password first
-    const isCurrentValid = await validateLogin(username || 'admin', currentPassword);
-    if (!isCurrentValid) {
+    const result = await changePasswordWithBackend(currentPassword, newPassword, token);
+    if (!result.success || !result.token) {
       return NextResponse.json(
-        { error: 'Nuværende adgangskode er forkert' },
+        { error: result.error || 'Kunne ikke ændre adgangskode' },
         { status: 400 }
       );
     }
 
-    await saveCredentials(username || 'admin', newPassword);
-
     // Issue refreshed session cookie
-    const newToken = createSessionToken(username || 'admin');
     const response = NextResponse.json({
       success: true,
       message: 'Adgangskoden er opdateret',
@@ -136,7 +132,7 @@ export async function PUT(request: Request) {
 
     response.cookies.set({
       name: AUTH_COOKIE_NAME,
-      value: newToken,
+      value: result.token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -149,4 +145,3 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Kunne ikke ændre adgangskode' }, { status: 500 });
   }
 }
-

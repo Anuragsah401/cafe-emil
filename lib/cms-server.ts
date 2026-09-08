@@ -1,92 +1,49 @@
-import fs from 'fs';
-import path from 'path';
-import { Redis } from '@upstash/redis';
 import { CmsData, getCmsData } from './cms';
 
-const dataFilePath = path.join(process.cwd(), 'data', 'cms-data.json');
-const REDIS_CMS_KEY = 'cafeemil_cms_data';
+const BACKEND_URL =
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  'http://localhost:5001';
 
-export function getRedisClient(): Redis | null {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (url && token) {
-    return new Redis({ url, token });
-  }
-  return null;
-}
-
-export function isKvConfigured(): boolean {
-  return Boolean(
-    (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) ||
-    (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
-  );
-}
-
-function getFallbackCmsData(): CmsData {
+export async function getServerCmsData(): Promise<CmsData> {
   try {
-    if (fs.existsSync(dataFilePath)) {
-      const fileContents = fs.readFileSync(dataFilePath, 'utf8');
-      return JSON.parse(fileContents) as CmsData;
+    const res = await fetch(`${BACKEND_URL}/api/cms`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(3500),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data === 'object' && data.restaurant) {
+        return data as CmsData;
+      }
     }
   } catch (error) {
-    // Read error or file system not available
+    // Graceful fallback to static seed data if backend is starting or offline
   }
+
   return getCmsData();
 }
 
-export async function getServerCmsData(): Promise<CmsData> {
-  const redis = getRedisClient();
-  if (redis) {
-    try {
-      const data = await redis.get<CmsData>(REDIS_CMS_KEY);
-      if (data && typeof data === 'object') {
-        return data;
-      }
-      // If key does not exist yet in Redis, seed with local default data
-      const initial = getFallbackCmsData();
-      await redis.set(REDIS_CMS_KEY, initial);
-      return initial;
-    } catch (err) {
-      console.error('Vercel KV / Redis read error, falling back to local data:', err);
-    }
+export async function updateCmsData(newData: Partial<CmsData>, token?: string): Promise<CmsData> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
-  return getFallbackCmsData();
-}
+  const res = await fetch(`${BACKEND_URL}/api/cms`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(newData),
+  });
 
-export async function updateCmsData(newData: Partial<CmsData>): Promise<CmsData> {
-  const currentData = await getServerCmsData();
-  const updated: CmsData = { ...currentData, ...newData };
-
-  const redis = getRedisClient();
-  let savedToCloud = false;
-
-  if (redis) {
-    try {
-      await redis.set(REDIS_CMS_KEY, updated);
-      savedToCloud = true;
-    } catch (err) {
-      console.error('Vercel KV / Redis write error:', err);
-      throw new Error('Kunne ikke gemme CMS data i Vercel KV / Redis');
-    }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Fejl ved opdatering af CMS i backend');
   }
 
-  // Also try to write to local filesystem if writable (e.g. local development)
-  try {
-    const dataDir = path.dirname(dataFilePath);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    fs.writeFileSync(dataFilePath, JSON.stringify(updated, null, 2), 'utf8');
-  } catch (error) {
-    // Expected on Vercel/serverless read-only filesystem
-    if (!savedToCloud) {
-      console.error('Filesystem is read-only and no Vercel KV / Redis is connected:', error);
-      throw new Error(
-        'Filsystemet i produktion er skrivebeskyttet. Tilslut Vercel KV eller Upstash Redis under Vercel Storage for at gemme ændringer.'
-      );
-    }
-  }
-
-  return updated;
+  const json = await res.json();
+  return json.data;
 }

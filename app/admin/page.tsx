@@ -125,11 +125,11 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Storage status on Vercel
+  // Backend & Supabase status
   const [storageStatus, setStorageStatus] = useState<{
-    isVercel: boolean;
-    kvConfigured: boolean;
-    blobConfigured: boolean;
+    backendOnline: boolean;
+    supabaseConnected: boolean;
+    backendUrl: string;
     readyForProduction: boolean;
   } | null>(null);
   const [showStorageGuide, setShowStorageGuide] = useState(false);
@@ -365,44 +365,64 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Vercel Storage Notice Banner (Shown if KV or Blob is not connected) */}
-        {storageStatus && (!storageStatus.kvConfigured || !storageStatus.blobConfigured) && (
-          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-page-enter">
+        {/* Backend & Supabase Notice Banner */}
+        {storageStatus && (
+          <div
+            className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-page-enter ${
+              storageStatus.supabaseConnected
+                ? 'bg-emerald-500/10 border-emerald-500/30'
+                : 'bg-amber-500/10 border-amber-500/30'
+            }`}
+          >
             <div className="flex items-start sm:items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0 ${
+                  storageStatus.supabaseConnected
+                    ? 'bg-emerald-500/20 text-emerald-400'
+                    : 'bg-amber-500/20 text-amber-400'
+                }`}
+              >
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-white">
-                    Vercel Cloud Storage Setup
+                    Node.js &amp; Supabase Backend Status
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    {!storageStatus.kvConfigured && !storageStatus.blobConfigured
-                      ? 'KV & Blob mangler'
-                      : !storageStatus.kvConfigured
-                      ? 'KV mangler'
-                      : 'Blob mangler'}
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                      storageStatus.supabaseConnected
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                        : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                    }`}
+                  >
+                    {storageStatus.supabaseConnected
+                      ? '✓ Supabase Cloud Forbundet'
+                      : 'Server Kører (Supabase Nøgler Mangler)'}
                   </span>
                 </div>
                 <p className="text-[11px] text-zinc-300 mt-0.5">
-                  Vercel filsystem er skrivebeskyttet. Forbind Vercel KV (database) og Blob (billeder) i dit Vercel Dashboard for at gemme live i produktion.
+                  {storageStatus.supabaseConnected
+                    ? 'Backend kører på Node.js og gemmer alt indhold og uploadede fotos direkte i din Supabase database og storage bucket.'
+                    : 'Express backend kører på port 5001 med lokal fallback. Tilføj din SUPABASE_URL og nøgle i server/.env for at aktivere cloud-database.'}
                 </p>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowStorageGuide(true)}
-              className="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-lg shadow-amber-400/20 shrink-0"
-            >
-              <span>Se Guide (1 min)</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+            {!storageStatus.supabaseConnected && (
+              <button
+                type="button"
+                onClick={() => setShowStorageGuide(true)}
+                className="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-lg shadow-amber-400/20 shrink-0"
+              >
+                <span>Supabase Setup (2 min)</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         )}
 
-        {/* Storage Guide Modal */}
+        {/* Supabase Guide Modal */}
         {showStorageGuide && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
             <div className="bg-[#181415] border border-white/20 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl space-y-6 animate-page-enter">
@@ -410,7 +430,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-amber-400" />
                   <h3 className="text-lg font-bold text-white">
-                    Sådan aktiverer du Vercel Storage
+                    Sådan forbinder du Supabase til din Backend
                   </h3>
                 </div>
                 <button
@@ -424,36 +444,37 @@ export default function AdminDashboardPage() {
 
               <div className="space-y-4 text-xs text-zinc-300">
                 <p className="text-zinc-300">
-                  På Vercel kører hjemmesiden i et serverless miljø, hvor filsystemet er skrivebeskyttet. For at gemme indhold og uploade billeder skal du blot tilknytte de to gratis Vercel Storage services med ét klik:
+                  Backend-serveren i mappen <code className="bg-white/10 px-1.5 py-0.5 rounded text-white font-mono">server/</code> er bygget med Node.js og Express. Følg disse hurtige trin for at forbinde dit gratis Supabase-projekt:
                 </p>
 
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
                   <div className="font-bold text-white flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px]">1</span>
-                    <span>Tilføj KV / Redis (Gemmer menukort, tekster og priser)</span>
+                    <span>Hent API-nøgler fra Supabase</span>
                   </div>
                   <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed">
-                    Gå til dit projekt på <a href="https://vercel.com" target="_blank" rel="noreferrer" className="text-amber-400 underline font-semibold">vercel.com</a> &rarr; Vælg fanen <strong>Storage</strong> &rarr; Klik <strong>Create Database</strong> &rarr; Vælg <strong>KV</strong> (eller Upstash Redis) &rarr; Klik <strong>Create &amp; Connect</strong>.
+                    Gå til dit projekt på <a href="https://supabase.com" target="_blank" rel="noreferrer" className="text-amber-400 underline font-semibold">supabase.com</a> &rarr; <strong>Project Settings</strong> &rarr; <strong>API</strong> &rarr; Kopier <strong>Project URL</strong> og <strong>service_role</strong> nøglen (eller anon nøglen).
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
                   <div className="font-bold text-white flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px]">2</span>
-                    <span>Tilføj Blob (Gemmer uploadede fotos og billeder)</span>
+                    <span>Indsæt i server/.env</span>
                   </div>
-                  <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed">
-                    I samme <strong>Storage</strong> fane &rarr; Klik <strong>Create Database</strong> &rarr; Vælg <strong>Blob</strong> &rarr; Klik <strong>Create &amp; Connect</strong>.
+                  <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed font-mono">
+                    SUPABASE_URL=https://dit-projekt.supabase.co<br />
+                    SUPABASE_SERVICE_ROLE_KEY=din-supabase-key
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
                   <div className="font-bold text-white flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-emerald-400 text-black font-bold flex items-center justify-center text-[10px]">3</span>
-                    <span>Færdig!</span>
+                    <span>Kør SQL Skemaet</span>
                   </div>
                   <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed">
-                    Vercel indsætter automatisk miljøvariablerne for dig. Udrulningen opdaterer sig selv, og du kan nu ændre alt indhold og uploade billeder live uden fejl!
+                    Åbn <strong>SQL Editor</strong> i Supabase, kopier indholdet fra filen <code className="bg-white/10 px-1 rounded text-white">server/schema.sql</code>, og klik <strong>Run</strong>. Det opretter tabellerne for CMS, administratorer og billed-bucket automatisk.
                   </p>
                 </div>
               </div>

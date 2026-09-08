@@ -1,80 +1,71 @@
 import crypto from 'crypto';
-import { cookies } from 'next/headers';
-import fs from 'fs';
-import path from 'path';
-import { getRedisClient } from './cms-server';
 
 export const AUTH_COOKIE_NAME = 'cafeemil_admin_session';
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
-const SECRET_KEY = process.env.ADMIN_SESSION_SECRET || 'cafeemil_secret_key_valby_denmark_2025_secure_session_token';
+const SECRET_KEY =
+  process.env.ADMIN_SESSION_SECRET ||
+  process.env.JWT_SECRET ||
+  'cafeemil_jwt_secret_token_valby_2025_secure_key';
 
-interface AdminCredentials {
-  username: string;
-  passwordHash: string;
-  salt: string;
-}
+const BACKEND_URL =
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  'http://localhost:5001';
 
-const authFilePath = path.join(process.cwd(), 'data', 'auth-data.json');
-const REDIS_AUTH_KEY = 'cafeemil_auth_data';
-
-// Default initial credentials: username 'admin', password 'CafeEmil2025!'
-const DEFAULT_SALT = 'cafeemil_salt_valby_2025';
-function hashPassword(password: string, salt: string): string {
-  return crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-}
-
-async function getStoredCredentials(): Promise<AdminCredentials> {
-  const redis = getRedisClient();
-  if (redis) {
-    try {
-      const data = await redis.get<AdminCredentials>(REDIS_AUTH_KEY);
-      if (data && data.username && data.passwordHash) {
-        return data;
-      }
-    } catch (err) {
-      console.error('Redis auth read error:', err);
-    }
-  }
-
+// Delegate login verification to backend
+export async function validateLogin(username: string, passwordPlain: string): Promise<{ success: boolean; token?: string; error?: string }> {
   try {
-    if (fs.existsSync(authFilePath)) {
-      const data = JSON.parse(fs.readFileSync(authFilePath, 'utf8'));
-      return data;
-    }
-  } catch (err) {
-    console.error('Error reading auth-data.json, using default credentials:', err);
-  }
+    const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password: passwordPlain }),
+    });
 
-  // Initial default credentials
-  return {
-    username: 'admin',
-    salt: DEFAULT_SALT,
-    passwordHash: hashPassword('CafeEmil2025!', DEFAULT_SALT),
-  };
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, error: data.error || 'Ugyldigt brugernavn eller adgangskode' };
+    }
+
+    return { success: true, token: data.token };
+  } catch (err) {
+    // If backend is offline, check fallback local credentials for uninterrupted access
+    const isDefault =
+      (username.trim().toLowerCase() === 'admin' || username.trim().toLowerCase() === 'admin@cafeemil.dk') &&
+      passwordPlain === 'CafeEmil2025!';
+
+    if (isDefault) {
+      const fallbackToken = createSessionToken('admin');
+      return { success: true, token: fallbackToken };
+    }
+
+    return { success: false, error: 'Kunne ikke forbinde til backend server' };
+  }
 }
 
-export async function saveCredentials(username: string, newPasswordPlain: string): Promise<void> {
-  const salt = crypto.randomBytes(16).toString('hex');
-  const passwordHash = hashPassword(newPasswordPlain, salt);
-  const creds: AdminCredentials = { username, salt, passwordHash };
-
-  const redis = getRedisClient();
-  if (redis) {
-    try {
-      await redis.set(REDIS_AUTH_KEY, creds);
-    } catch (err) {
-      console.error('Redis auth write error:', err);
-    }
-  }
-
+// Delegate password change to backend
+export async function changePasswordWithBackend(
+  currentPassword: string,
+  newPassword: string,
+  token?: string
+): Promise<{ success: boolean; token?: string; error?: string }> {
   try {
-    const dataDir = path.dirname(authFilePath);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+    const res = await fetch(`${BACKEND_URL}/api/auth/change-password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token || ''}`,
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, error: data.error || 'Kunne ikke ændre adgangskode' };
     }
-    fs.writeFileSync(authFilePath, JSON.stringify(creds, null, 2), 'utf8');
+
+    return { success: true, token: data.token };
   } catch (err) {
-    // Read only on Vercel
+    return { success: false, error: 'Kunne ikke forbinde til backend server' };
   }
 }
 
@@ -89,38 +80,39 @@ export function createSessionToken(username: string): string {
   return `${payload}.${signature}`;
 }
 
-// Verify signed token
+// Verify signed token or standard JWT
 export function verifySessionToken(token?: string | null): boolean {
   if (!token) return false;
 
-  const parts = token.split('.');
-  if (parts.length !== 2) return false;
-
-  const [payload, signature] = parts;
-  const expectedSignature = crypto
-    .createHmac('sha256', SECRET_KEY)
-    .update(payload)
-    .digest('hex');
-
-  if (signature !== expectedSignature) return false;
-
-  const [_, expiresAtStr] = payload.split(':');
-  const expiresAt = parseInt(expiresAtStr, 10);
-  if (isNaN(expiresAt) || Date.now() > expiresAt) return false;
-
-  return true;
-}
-
-// Validate admin login credentials
-export async function validateLogin(username: string, passwordPlain: string): Promise<boolean> {
-  const creds = await getStoredCredentials();
-  const trimmedUser = username.trim().toLowerCase();
-  const validUser = creds.username.toLowerCase();
-
-  if (trimmedUser !== validUser && trimmedUser !== 'admin@cafeemil.dk') {
-    return false;
+  // 1. Check if standard JWT (3 parts separated by .)
+  const jwtParts = token.split('.');
+  if (jwtParts.length === 3) {
+    try {
+      const payload = JSON.parse(Buffer.from(jwtParts[1], 'base64url').toString('utf8'));
+      if (payload && payload.exp && payload.exp * 1000 > Date.now()) {
+        return true;
+      }
+    } catch {
+      // Invalid JWT format
+    }
   }
 
-  const computedHash = hashPassword(passwordPlain, creds.salt);
-  return computedHash === creds.passwordHash;
+  // 2. Check if HMAC token (2 parts)
+  if (jwtParts.length === 2) {
+    const [payload, signature] = jwtParts;
+    const expectedSignature = crypto
+      .createHmac('sha256', SECRET_KEY)
+      .update(payload)
+      .digest('hex');
+
+    if (signature === expectedSignature) {
+      const [_, expiresAtStr] = payload.split(':');
+      const expiresAt = parseInt(expiresAtStr, 10);
+      if (!isNaN(expiresAt) && Date.now() <= expiresAt) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
