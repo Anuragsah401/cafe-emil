@@ -1,0 +1,982 @@
+{
+  "restaurant": {
+    "name": "Café Emil",
+    "legalName": "Café Emil",
+    "tagline": "Valby's hyggelige café & restaurant",
+    "description": "Besøg Café Emil i Valby og nyd udsøgt brunch, saftige burgere, frisk pasta, lækre grillretter, cocktails og ægte caféhygge. Dit lokale mødested på Annexstræde 3.",
+    "streetAddress": "Annexstræde 3",
+    "postalCode": "2500",
+    "city": "Valby",
+    "country": "Danmark",
+    "countryCode": "DK",
+    "phone": "36 44 74 41",
+    "phoneInternational": "+45 36 44 74 41",
+    "email": "info@cafeemil.dk",
+    "websiteUrl": "https://cafeemil.dk",
+    "logoUrl": "/images/cafeemil-logo.png",
+    "seatBookingUrl": "https://cafeemil.dk/book-bord",
+    "seatBookingEngineId": "cafe-emil-valby",
+    "smileyUrl": "https://www.findsmiley.dk/",
+    "googleMapsUrl": "https://maps.google.com/?q=Café+Emil+Annexstræde+3+2500+Valby",
+    "coordinates": {
+      "lat": 55.6653,
+      "lng": 12.5148
+    },
+    "indoorCapacity": 130,
+    "outdoorCapacity": 80,
+    "priceRange": "$$",
+    "servesCuisine": [
+      "Café",
+      "Dansk",
+      "Brunch",
+      "Burgere",
+      "Pasta",
+      "Grill",
+      "Pizza",
+      "Cocktails"
+    ],
+    "socialLinks": {
+      "facebook": "https://www.facebook.com/cafeemil",
+      "instagram": "https://www.instagram.com/cafeemil"
+    }
+  },
+  "openingHours": {
+    "schedule": [
+      {
+        "id": "mon-thu",
+        "days": "Mandag – Torsdag",
+        "open": "10:00",
+        "close": "23:00",
+        "kitchenClose": "22:30",
+        "daysOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday"
+        ]
+      },
+      {
+        "id": "fri-sat",
+        "days": "Fredag – Lørdag",
+        "open": "10:30",
+        "close": "00:00",
+        "kitchenClose": "23:20",
+        "daysOfWeek": [
+          "Friday",
+          "Saturday"
+        ]
+      },
+      {
+        "id": "sun",
+        "days": "Søndag",
+        "open": "12:00",
+        "close": "23:00",
+        "kitchenClose": "22:20",
+        "daysOfWeek": [
+          "Sunday"
+        ]
+      }
+    ],
+    "brunchHours": "Alle dage: 10:00 – 14:00",
+    "weekendBookingNotice": "Bemærk: For at booke bord fredag og lørdag aften anbefales det at booke i god tid via SeatBooking eller ringe direkte på 36 44 74 41.",
+    "specialHolidays": [
+      {
+        "title": "Helligdage & Særlige begivenheder",
+        "description": "Vi holder åbent de fleste helligdage. Følg med på vores sociale medier eller ring for specifikke åbningstider i julen og nytår."
+      }
+    ]
+  },
+  "sections": {
+    "hero": {
+      "eyebrow": "Velkommen til Café Emil",
+      "title": "Valby's hyggelige café & restaurant",
+      "subtitle": "Hvor udsøgt mad, afslappet stemning og ægte gæstfrihed mødes i hjertet af Valby. Nyd alt fra vores kendte brunch til saftige bøffer, sprøde pizzaer og håndrørte cocktails.",
+      "ctaPrimaryText": "Book bord",
+      "ctaSecondaryText": "Se hele menukortet",
+      "badge": "130 pladser inde • 80 på terrassen",
+      "videoBackground": {
+        "enabled": true,
+        "youtubeId": "MHUuvjLxTrg",
+        "videoUrl": "https://youtu.be/MHUuvjLxTrg",
+        "startTime": 0,
+        "endTime": 39,
+        "posterImage": "https://cafeemil.dk/wp-content/uploads/2024/12/forside-cafeemil.jpg"
+      }
+    },
+    "intro": {
+      "eyebrow": "Vores filosofi",
+      "title": "En fortælling om smag, hygge og fællesskab",
+      "body": "Hos Café Emil har vi skabt et sted, hvor gæster kan nyde lækker mad og drikke i en afslappet og indbydende atmosfære. Siden vores begyndelse har missionen været at forene råvarer af høj kvalitet med ægte københavnsk caféhygge. Uanset om du søger en rolig formiddagskaffe, et frokostmøde, en familiemiddag eller en festlig aften med cocktails og brætspil, byder vi dig varmt velkommen på Annexstræde 3.",
+      "features": [
+        {
+          "title": "Friske råvarer",
+          "desc": "Alt tilberedes med kærlighed og omhyggelig sans for smag og kvalitet."
+        },
+        {
+          "title": "Solrig terrasse",
+          "desc": "80 udendørs pladser til lune sommerdage og forfriskende drinks."
+        },
+        {
+          "title": "Selskaber & Fester",
+          "desc": "Kapacitet op til 130 personer indenfor til fødselsdage, konfirmationer og firmafester."
+        },
+        {
+          "title": "Brætspil & Hygge",
+          "desc": "Et bredt udvalg af populære brætspil til sjove stunder med venner og familie."
+        }
+      ]
+    },
+    "brunch": {
+      "title": "Start dagen med vores elskede brunch",
+      "hours": "Serveres alle ugens dage fra kl. 10:00 – 14:00",
+      "description": "Forkæl dig selv med vores populære brunch-tallerkener. Vælg mellem den klassiske cafébrunch eller vores berømte Maidens Brunch med tyrkiske specialiteter.",
+      "priceNote": "Kun 149 kr. inkl. et lille glas juice efter eget valg (appelsin, mango eller æble)."
+    },
+    "selskaber": {
+      "title": "Hold dit næste selskab hos Café Emil",
+      "lead": "Leder du efter et stemningsfuldt sted i Valby til at fejre livets store begivenheder?",
+      "description": "Vi tilbyder lyse og fleksible lokaler med plads til op til 130 gæster indendørs samt 80 pladser på vores solrige terrasse. Vi skræddersyr menuen til netop dit arrangement – uanset om det er fødselsdag, konfirmation, reception, jubilæum eller firmafest.",
+      "capacities": {
+        "indoor": "Op til 130 personer",
+        "terrace": "Op til 80 personer"
+      },
+      "perks": [
+        "Skræddersyede menuer tilpasset jeres ønsker og budget",
+        "Mulighed for velkomstdrinks, snacks og vinmenuer",
+        "Central beliggenhed i Valby med nem adgang via tog og bus",
+        "Dedikeret personale der sørger for en uforglemmelig dag"
+      ]
+    },
+    "boardGames": {
+      "title": "Spil, hygge og godt selskab",
+      "subtitle": "Brætspil og caféstemning hånd i hånd",
+      "description": "Hos Café Emil er et måltid mere end blot mad på tallerkenen. Vi har et stort udvalg af klassiske og moderne brætspil liggende, som I frit kan benytte under jeres besøg. Tag et spil backgammon over en espresso, udfordr vennerne i brætspilsklassikere over en kold fadøl, eller hav en hyggelig familiestund mens I nyder vores lækre desserter.",
+      "ctaText": "Besøg os i Valby"
+    },
+    "takeaway": {
+      "title": "Bestil Takeaway – Nyd Café Emil derhjemme",
+      "description": "Få vores velsmagende burgere, frisklavede pastaretter, sprøde pizzaer og saftige grillretter leveret hjem eller pakket klar til afhentning.",
+      "orderPhone": "36 44 74 41",
+      "pickupAddress": "Annexstræde 3, 2500 Valby"
+    },
+    "omOs": {
+      "title": "Om Café Emil",
+      "lead": "Et lokalt samlingspunkt i hjertet af Valby siden åbningen.",
+      "storyP1": "Hos Café Emil er missionen enkel: at servere ærlig, velsmagende mad lavet på gode råvarer i en varm og uformel atmosfære. Vi tror på, at en god café skal være mere end blot et spisested – det skal være et socialt åndehul.",
+      "storyP2": "Uanset om du dumper ind til en hurtig espresso, samler familien til vores kendte brunch i weekenden, eller udfordrer vennerne i backgammon over en kurv varme fritter og kolde øl, er du altid velkommen.",
+      "values": [
+        {
+          "title": "Kvalitetsråvarer",
+          "desc": "Friske grøntsager, kvalitetskød og nøje udvalgte oste."
+        },
+        {
+          "title": "Ægte Hygge",
+          "desc": "Afslappet atmosfære, venlig betjening og brætspil til alle."
+        },
+        {
+          "title": "Solrig Terrasse",
+          "desc": "80 udendørs pladser til varme dage og kolde drinks."
+        }
+      ]
+    },
+    "kontakt": {
+      "title": "Find vej til Café Emil",
+      "description": "Vi ligger centralt i Valby på Annexstræde 3, kun 3 minutters gang fra Valby Station og shoppingcentret Spinderiet.",
+      "transitInfo": "Tog: S-tog linje B, C, H til Valby Station (250m gåafstand). Bus: 4A, 18, 26 stopper tæt ved.",
+      "parkingInfo": "Parkering: 2 timers gratis parkering i Spinderiets p-kælder lige rundt om hjørnet."
+    }
+  },
+  "menuCategories": [
+    {
+      "id": "brunch",
+      "slug": "brunch",
+      "name": "Brunch",
+      "description": "Serveres alle dage kl. 10.00 – 14.00. Den perfekte start på dagen med friske råvarer.",
+      "h1": "Brunch i Valby hos Café Emil"
+    },
+    {
+      "id": "burgere",
+      "slug": "burgere",
+      "name": "Burgere",
+      "description": "Alle burgere serveres med salat, tomat, rødløg, syltet agurk og grovfritter. Vælg mellem 180g hakket okse eller crunch kylling.",
+      "h1": "Håndlavede Burgere i Valby"
+    },
+    {
+      "id": "sandwich",
+      "slug": "sandwich",
+      "name": "Sandwich",
+      "description": "Alle sandwich serveres med sprøde grovfritter og frisk salat.",
+      "h1": "Frisksmurte Sandwich i Valby"
+    },
+    {
+      "id": "grillen",
+      "slug": "grillen",
+      "name": "Fra Grillen",
+      "description": "Møre bøffer, grillretter og mexicanske favoritter tilberedt med omhu.",
+      "h1": "Bøffer og Grillretter i Valby"
+    },
+    {
+      "id": "pizza",
+      "slug": "pizza",
+      "name": "Pizza",
+      "description": "Sprøde pizzaer bagt med italienske oste og kvalitetsråvarer. Vælg mellem hvidløgs-, chili- eller basilikumolie.",
+      "h1": "Stenovnsinspirerede Pizzaer i Valby"
+    },
+    {
+      "id": "salater",
+      "slug": "salater",
+      "name": "Salater",
+      "description": "Friske, mættende salater med nøje udvalgte ingredienser. Efterspørg tjener for brød og smør.",
+      "h1": "Friske & Mættende Salater i Valby"
+    },
+    {
+      "id": "pasta",
+      "slug": "pasta",
+      "name": "Pasta & Mere",
+      "description": "Klassiske pastaretter, lasagne, stjerneskud og omeletter for enhver smag.",
+      "h1": "Pastaretter, Klassikere & Omeletter"
+    },
+    {
+      "id": "desserter",
+      "slug": "desserter",
+      "name": "Desserter",
+      "description": "Søde fristelser som pandekager, vafler, cheesecake og tyrkisk künefe.",
+      "h1": "Lækre Desserter & Kager"
+    },
+    {
+      "id": "bornemenu",
+      "slug": "bornemenu",
+      "name": "Børnemenu",
+      "description": "For børn under 12 år. Alle børnemenuer kommer med en lille overraskelse.",
+      "h1": "Børnemenu hos Café Emil"
+    },
+    {
+      "id": "tilbehor",
+      "slug": "tilbehor",
+      "name": "Tilbehør & Snacks",
+      "description": "Sprøde fritter, sweet potato fries, dips og barsnacks.",
+      "h1": "Tilbehør, Fritter & Snacks"
+    },
+    {
+      "id": "drikkevarer",
+      "slug": "drikkevarer",
+      "name": "Drikkevarer",
+      "description": "Økologisk te, barista-kaffe, klassiske cocktails, vine, fadøl og friske lemonader.",
+      "h1": "Kaffe, Vin, Fadøl & Cocktails i Valby"
+    }
+  ],
+  "menuItems": [
+    {
+      "id": "brunch-classic",
+      "categoryId": "brunch",
+      "name": "Klassisk Brunch",
+      "price": 149,
+      "description": "Serveres med et lille glas juice (vælg appelsin, mango eller æble). Ost, pølser, frisk frugt, yoghurt m/müsli, sirup, æg med bacon, pandekager, kage, brød og smør.",
+      "tags": [
+        "Populær",
+        "Serveres 10-14"
+      ],
+      "image": "https://cafeemil.dk/wp-content/uploads/2024/12/332323.jpg"
+    },
+    {
+      "id": "brunch-maidens",
+      "categoryId": "brunch",
+      "name": "Maidens Brunch",
+      "price": 139,
+      "description": "Serveres med et lille glas juice (appelsin, mango eller æble). Ost, kyllingepølser, tyrkisk pepperoni (sucuk), frisk frugt, yoghurt m/müsli, sirup, æg, oliven, tyrkisk hvid ost, pandekager, kage, brød og smør.",
+      "tags": [
+        "Husets Specialitet",
+        "Serveres 10-14"
+      ],
+      "image": "/uploads/screenshot-2026-08-16-at-20-28-53-1788861408864-rme5dx.png"
+    },
+    {
+      "id": "brunch-toast",
+      "categoryId": "brunch",
+      "name": "Maidens Toast",
+      "price": 79,
+      "description": "Ristet toastbrød med smeltet ost og krydret tyrkisk pepperoni (sucuk).",
+      "tags": [
+        "Lille Sult"
+      ]
+    },
+    {
+      "id": "burger-big-ben",
+      "categoryId": "burgere",
+      "name": "Big Ben Burger",
+      "price": 172,
+      "description": "Cheddar ost og spejlæg. Serveres med salat, tomat, rødløg, syltet agurk og sprøde grovfritter. Vælg okse 180g eller crunch kylling samt dip.",
+      "tags": [
+        "Favorit",
+        "Bestseller"
+      ],
+      "image": "https://cafeemil.dk/wp-content/uploads/2024/12/emil5.jpg"
+    },
+    {
+      "id": "burger-el-toro",
+      "categoryId": "burgere",
+      "name": "El Toro Burger",
+      "price": 169,
+      "description": "Cheddar ost, paprika og krydrede jalapeños. Serveres med salat, tomat, rødløg, syltet agurk og grovfritter.",
+      "tags": [
+        "Spicy"
+      ]
+    },
+    {
+      "id": "burger-lille-havfrue",
+      "categoryId": "burgere",
+      "name": "Den Lille Havfrue",
+      "price": 169,
+      "description": "Klassisk velsmag med smeltet cheddar ost, salat, tomat, rødløg, syltet agurk og sprøde grovfritter.",
+      "tags": [
+        "Klassiker"
+      ]
+    },
+    {
+      "id": "burger-statue-of-liberty",
+      "categoryId": "burgere",
+      "name": "Statue of Liberty",
+      "price": 169,
+      "description": "Cheddar ost og chilistegte champignon. Serveres med salat, tomat, rødløg, syltet agurk og grovfritter.",
+      "tags": [
+        "Chef's Pick"
+      ]
+    },
+    {
+      "id": "burger-istanbul",
+      "categoryId": "burgere",
+      "name": "Istanbul Burger",
+      "price": 169,
+      "description": "Cheddar ost, tyrkisk pastrami og krydret sucuk. Serveres med salat, tomat, rødløg, syltet agurk og grovfritter.",
+      "tags": [
+        "Signatur"
+      ]
+    },
+    {
+      "id": "sw-kylling",
+      "categoryId": "sandwich",
+      "name": "Kyllingesandwich",
+      "price": 159,
+      "description": "Mørt kyllingebryst, hummus, frisk salat og mild creme fraiche dressing. Serveres med grovfritter.",
+      "tags": [
+        "Populær"
+      ]
+    },
+    {
+      "id": "sw-club",
+      "categoryId": "sandwich",
+      "name": "Clubsandwich",
+      "price": 159,
+      "description": "Klassisk sandwich med kylling, sprød bacon, guacamole og cremet karrydressing. Serveres med grovfritter.",
+      "tags": [
+        "Klassiker"
+      ]
+    },
+    {
+      "id": "sw-vegetar",
+      "categoryId": "sandwich",
+      "name": "Vegetarisk Sandwich",
+      "price": 159,
+      "description": "Serveres med creme fraiche, fyldig hummus og hjemmelavet tzatziki samt sprøde grovfritter og salat.",
+      "tags": [
+        "Vegetarisk"
+      ]
+    },
+    {
+      "id": "sw-laks",
+      "categoryId": "sandwich",
+      "name": "Sandwich med Røget Laks",
+      "price": 159,
+      "description": "Kvalitetsrøget laks, frisk salat og hjemmelavet tzatziki. Serveres med sprøde grovfritter.",
+      "tags": [
+        "Fisk"
+      ]
+    },
+    {
+      "id": "sw-ribeye",
+      "categoryId": "sandwich",
+      "name": "Ribeye Sandwich",
+      "price": 159,
+      "description": "Mørt grillet ribeye-kød, grøn pesto, sødmefuld løgmarmelade og tzatziki. Serveres med grovfritter.",
+      "tags": [
+        "Luksus"
+      ]
+    },
+    {
+      "id": "grill-ribeye",
+      "categoryId": "grillen",
+      "name": "Ribeye Steak (300g)",
+      "price": 320,
+      "description": "300 g saftig og mør ribeye bøf. Serveres med sprøde grovfritter, sæsonens garniture og valg mellem bearnaise- eller pebersauce.",
+      "tags": [
+        "Premium Steak"
+      ],
+      "image": "https://cafeemil.dk/wp-content/uploads/2024/12/1212123-776x1024.jpg"
+    },
+    {
+      "id": "grill-hakkebof",
+      "categoryId": "grillen",
+      "name": "Klassisk Hakkebøf (250g)",
+      "price": 210,
+      "description": "250 g hakket oksekød med god stegeskorpe. Serveres med grovfritter, garniture og valg mellem bearnaise- eller pebersauce.",
+      "tags": [
+        "Klassisk"
+      ]
+    },
+    {
+      "id": "grill-kylling",
+      "categoryId": "grillen",
+      "name": "Kyllingeret",
+      "price": 189,
+      "description": "Mørt, saftigt kyllingebryst. Serveres med sprøde pommes frites, fyldig hummus og frisk garniture.",
+      "tags": [
+        "Populær"
+      ]
+    },
+    {
+      "id": "grill-enchilada",
+      "categoryId": "grillen",
+      "name": "Mexicansk Enchilada",
+      "price": 169,
+      "description": "Sammenrullet ovnbagt tortilla fyldt med kød (vælg mellem kylling eller oksekød) og smelteost. Serveres med salsa, creme fraiche, guacamole og salat.",
+      "tags": [
+        "Mexicansk"
+      ]
+    },
+    {
+      "id": "grill-nachos",
+      "categoryId": "grillen",
+      "name": "Klassiske Nachos",
+      "price": 159,
+      "description": "Sprøde majschips gratineret med smelteost, oliven og jalapeños. Serveres med guacamole, salsa og creme fraiche.",
+      "tags": [
+        "Delevenlig",
+        "Vegetarisk"
+      ]
+    },
+    {
+      "id": "grill-nachos-kylling",
+      "categoryId": "grillen",
+      "name": "Nachos med Kylling",
+      "price": 169,
+      "description": "Sprøde majschips gratineret med kylling og smelteost, oliven og jalapeños. Serveres med guacamole, salsa og creme fraiche.",
+      "tags": [
+        "Delevenlig",
+        "Bestseller"
+      ]
+    },
+    {
+      "id": "pizza-4-cheeses",
+      "categoryId": "pizza",
+      "name": "Four Italian Cheeses Pizza",
+      "price": 152,
+      "description": "Buffalo mozzarella DOP, gorgonzola, stracchino ost, fontina ost, frisk basilikum og italiensk ekstra jomfruolivenolie.",
+      "tags": [
+        "Italiensk",
+        "Vegetarisk"
+      ],
+      "image": "https://cafeemil.dk/wp-content/uploads/2024/12/cafe-emil-pizza-1024x1024.jpg"
+    },
+    {
+      "id": "pizza-vegetar",
+      "categoryId": "pizza",
+      "name": "Vegetarian Pizza",
+      "price": 152,
+      "description": "Mozzarella fiordilatte, grillet courgette, grillet aubergine, solmodne tomater, basilikum og italiensk ekstra jomfruolivenolie.",
+      "tags": [
+        "Vegetarisk"
+      ]
+    },
+    {
+      "id": "pizza-bufala",
+      "categoryId": "pizza",
+      "name": "Bufala DOP Pizza",
+      "price": 152,
+      "description": "Buffalo mozzarella DOP, fyldig tomatsauce, frisk basilikum og italiensk ekstra jomfruolivenolie.",
+      "tags": [
+        "Klassisk Italiensk"
+      ]
+    },
+    {
+      "id": "pizza-istanbul",
+      "categoryId": "pizza",
+      "name": "Pizza Istanbul",
+      "price": 152,
+      "description": "Mozzarella, stracchino ost, fontina ost og krydret tyrkisk sucuk pølse.",
+      "tags": [
+        "Specialitet"
+      ]
+    },
+    {
+      "id": "salat-kylling",
+      "categoryId": "salater",
+      "name": "Kyllingesalat",
+      "price": 155,
+      "description": "Frisk sprød salat med kylling, sprødstegt bacon og husets cremede karrydressing.",
+      "tags": [
+        "Populær"
+      ]
+    },
+    {
+      "id": "salat-laks",
+      "categoryId": "salater",
+      "name": "Laksesalat",
+      "price": 155,
+      "description": "Røget kvalitetslaks, frisk moden avocado og sæsonens sprøde salatblanding.",
+      "tags": [
+        "Fisk",
+        "Sund"
+      ]
+    },
+    {
+      "id": "salat-tun",
+      "categoryId": "salater",
+      "name": "Tunmoussésalat",
+      "price": 155,
+      "description": "Hjemmelavet cremet tunmousse serveret på en bund af frisk grøn salat.",
+      "tags": [
+        "Fisk"
+      ]
+    },
+    {
+      "id": "salat-gedeost",
+      "categoryId": "salater",
+      "name": "Gedeost Salat",
+      "price": 155,
+      "description": "Lun gedeost, ristede pinjekerner og frisk basilikumdressing.",
+      "tags": [
+        "Vegetarisk"
+      ]
+    },
+    {
+      "id": "salat-rejer",
+      "categoryId": "salater",
+      "name": "Rejesalat",
+      "price": 155,
+      "description": "Møre grønlandske rejer, frisk avocado og aromatisk skaldyrsdressing.",
+      "tags": [
+        "Fisk"
+      ]
+    },
+    {
+      "id": "salat-emils",
+      "categoryId": "salater",
+      "name": "Emils Salat",
+      "price": 165,
+      "description": "Stegte kæmperejer, rødløg, avocado, frisk basilikum, citronsaft og jomfru olivenolie.",
+      "tags": [
+        "Signatur"
+      ]
+    },
+    {
+      "id": "pasta-ret",
+      "categoryId": "pasta",
+      "name": "Pasta Emil",
+      "price": 179,
+      "description": "Vælg mellem kylling eller vegetar. Frisk pasta vendt i en cremet tomatflødesauce med champignon og friskrevet parmesan.",
+      "tags": [
+        "Bestseller"
+      ]
+    },
+    {
+      "id": "pasta-lasagne",
+      "categoryId": "pasta",
+      "name": "Hjemmelavet Lasagne",
+      "price": 179,
+      "description": "Klassisk ovnbagt lasagne med rig kødsauce, bechamelsauce og smeltet ost. Serveres med frisk salat.",
+      "tags": [
+        "Klassiker"
+      ]
+    },
+    {
+      "id": "pasta-stjerneskud",
+      "categoryId": "pasta",
+      "name": "Traditionelt Stjerneskud",
+      "price": 189,
+      "description": "Rødspættefilet, dampet torsk, rejer, kaviar, thousand island dressing, citron og ristet brød.",
+      "tags": [
+        "Dansk Klassiker"
+      ]
+    },
+    {
+      "id": "pasta-rodspaette",
+      "categoryId": "pasta",
+      "name": "Paneret Rødspættefilet",
+      "price": 169,
+      "description": "To sprødstegte rødspættefileter serveret med frisk salat, remoulade og pommes frites.",
+      "tags": [
+        "Fisk"
+      ]
+    },
+    {
+      "id": "pasta-omelet-kylling",
+      "categoryId": "pasta",
+      "name": "Omelet med Kylling",
+      "price": 169,
+      "description": "Luftig æggeomelet tilberedt med mørt kyllingekød og friske urter.",
+      "tags": [
+        "Proteinrig"
+      ]
+    },
+    {
+      "id": "pasta-omelet-spansk",
+      "categoryId": "pasta",
+      "name": "Spansk Omelet",
+      "price": 169,
+      "description": "Små krydderkartofler, søde cherrytomater, peberfrugt og smeltet ost.",
+      "tags": [
+        "Vegetarisk"
+      ]
+    },
+    {
+      "id": "dessert-pandekage",
+      "categoryId": "desserter",
+      "name": "Pandekager med Is",
+      "price": 89,
+      "description": "Lune, nylavede pandekager serveret med cremet vaniljeis og chokoladesauce.",
+      "tags": [
+        "Sød Fristelse"
+      ]
+    },
+    {
+      "id": "dessert-nutella",
+      "categoryId": "desserter",
+      "name": "Nutella Pandekage",
+      "price": 95,
+      "description": "Lune pandekager rigt smurt med Nutella og serveret med vaniljeis.",
+      "tags": [
+        "Favorit"
+      ]
+    },
+    {
+      "id": "dessert-bananasplit",
+      "categoryId": "desserter",
+      "name": "Klassisk Bananasplit",
+      "price": 79,
+      "description": "Frisk banan, tre kugler is, flødeskum og chokoladesauce.",
+      "tags": [
+        "Klassiker"
+      ]
+    },
+    {
+      "id": "dessert-vaffel",
+      "categoryId": "desserter",
+      "name": "Belgisk Vaffel",
+      "price": 95,
+      "description": "Varm, sprød belgisk vaffel serveret med to kugler is og flødeskum.",
+      "tags": [
+        "Populær"
+      ]
+    },
+    {
+      "id": "dessert-kunefe",
+      "categoryId": "desserter",
+      "name": "Maidens Künefe",
+      "price": 89,
+      "description": "Autentisk tyrkisk ovnbagt künefe med smeltet ostetråd, pistacie, sød sirup og vaniljeis.",
+      "tags": [
+        "Husets Specialitet"
+      ]
+    },
+    {
+      "id": "dessert-cheesecake",
+      "categoryId": "desserter",
+      "name": "Cheesecake",
+      "price": 69,
+      "description": "Dagens cheesecake. Se det aktuelle udvalg i vores kageskab ved baren.",
+      "tags": [
+        "Kageskab"
+      ]
+    },
+    {
+      "id": "kid-dippers",
+      "categoryId": "bornemenu",
+      "name": "Chicken Dippers (Børnemenu)",
+      "price": 99,
+      "description": "Sprøde kyllingestykker serveret med pommes frites, ketchup og en lille overraskelse.",
+      "tags": [
+        "Børn"
+      ]
+    },
+    {
+      "id": "kid-burger",
+      "categoryId": "bornemenu",
+      "name": "Børneburger",
+      "price": 99,
+      "description": "Mild burgerbøf i blød bolle, serveret med pommes frites, ketchup og en lille overraskelse.",
+      "tags": [
+        "Børn"
+      ]
+    },
+    {
+      "id": "kid-pasta",
+      "categoryId": "bornemenu",
+      "name": "Børnepasta m. Kylling",
+      "price": 99,
+      "description": "Børnevenlig pasta med kylling og mild sauce, inkl. lille overraskelse.",
+      "tags": [
+        "Børn"
+      ]
+    },
+    {
+      "id": "snack-groft-fritter",
+      "categoryId": "tilbehor",
+      "name": "Sprøde Grovfritter",
+      "price": 99,
+      "description": "Stor kurv med gyldne, rustikke grovfritter. Vælg dip: ketchup, mayo eller chilimayo.",
+      "tags": [
+        "Delevenlig"
+      ]
+    },
+    {
+      "id": "snack-sweet-potato",
+      "categoryId": "tilbehor",
+      "name": "Sweet Potato Fries",
+      "price": 99,
+      "description": "Sprøde søde kartoffelfritter med valgfri dip.",
+      "tags": [
+        "Populær"
+      ]
+    },
+    {
+      "id": "drink-espresso",
+      "categoryId": "drikkevarer",
+      "name": "Espresso / Americano",
+      "price": 42,
+      "description": "Brygget på friskristede kvalitetsbønner.",
+      "tags": [
+        "Kaffe"
+      ]
+    },
+    {
+      "id": "drink-cappuccino",
+      "categoryId": "drikkevarer",
+      "name": "Cappuccino / Café Latte",
+      "price": 55,
+      "description": "Cremet, nydampet mælk med fyldig espresso. Mulighed for sirup (hasselnød, vanilje, karamel +4 kr.).",
+      "tags": [
+        "Kaffe"
+      ],
+      "image": "https://cafeemil.dk/wp-content/uploads/2024/12/kaffe-1024x768.jpg"
+    },
+    {
+      "id": "drink-te",
+      "categoryId": "drikkevarer",
+      "name": "English Teashop Organic Te",
+      "price": 49,
+      "description": "Vælg mellem Mint Tea, Green Tea, Lemongrass Citrus & Ginger, Earl Grey, White Tea Blueberry eller Super Berries.",
+      "tags": [
+        "Økologisk Te"
+      ]
+    },
+    {
+      "id": "drink-aperol",
+      "categoryId": "drikkevarer",
+      "name": "Aperol Spritz",
+      "price": 105,
+      "description": "Aperol, prosecco, danskvand og en frisk appelsinskive.",
+      "tags": [
+        "Cocktail",
+        "Populær"
+      ]
+    },
+    {
+      "id": "drink-mojito",
+      "categoryId": "drikkevarer",
+      "name": "Mojito (Klassisk / Strawberry / Melon)",
+      "price": 105,
+      "description": "Lys rom, frisk mynte, lime, rørsukker og danskvand.",
+      "tags": [
+        "Cocktail"
+      ]
+    },
+    {
+      "id": "drink-fadol",
+      "categoryId": "drikkevarer",
+      "name": "Fadøl (Royal Classic / Pilsner)",
+      "price": 65,
+      "description": "Kold, velskænket fadøl. Lille 54,- / Mellem 65,- / Stor 79,-.",
+      "tags": [
+        "Fadøl"
+      ]
+    },
+    {
+      "id": "drink-specialol",
+      "categoryId": "drikkevarer",
+      "name": "Specialøl (Schiøtz / Anarkist / Edelweiss)",
+      "price": 71,
+      "description": "Vælg mellem Gylden IPA, Mørk Mumme, Brown Ale eller Bloody Weizen 50 cl.",
+      "tags": [
+        "Specialøl"
+      ]
+    },
+    {
+      "id": "drink-vin",
+      "categoryId": "drikkevarer",
+      "name": "Husets Vin (Rød / Hvid / Rosé)",
+      "price": 69,
+      "description": "Friske, frugtige og velafstemte vine. Glas 69,- / Flaske 299,-.",
+      "tags": [
+        "Vin"
+      ]
+    },
+    {
+      "id": "drink-lemonade",
+      "categoryId": "drikkevarer",
+      "name": "Frisk Frozen Lemonade",
+      "price": 75,
+      "description": "Old Fashion eller Jordbær, blendet med isterninger, hyldeblomst og frisk mynte.",
+      "tags": [
+        "Alkoholfri",
+        "Forfriskende"
+      ]
+    }
+  ],
+  "gallery": [
+    {
+      "id": "g-1788861220292-9uyq",
+      "title": "logo",
+      "category": "drinks",
+      "src": "/uploads/screenshot-2026-08-16-at-20-39-40-1788861220290-dxgtok.png"
+    },
+    {
+      "id": "g1",
+      "title": "Hyggelige rammer indenfor",
+      "category": "interior",
+      "src": "https://cafeemil.dk/wp-content/uploads/2024/12/332323.jpg"
+    },
+    {
+      "id": "g2",
+      "title": "Solrig udendørs terrasse med 80 pladser",
+      "category": "terrace",
+      "src": "https://cafeemil.dk/wp-content/uploads/2024/12/selskaber-cafeemil.jpg"
+    },
+    {
+      "id": "g3",
+      "title": "Sprøde håndlavede pizzaer",
+      "category": "food",
+      "src": "https://cafeemil.dk/wp-content/uploads/2024/12/cafe-emil-pizza-1024x1024.jpg"
+    },
+    {
+      "id": "g4",
+      "title": "Baristakaffe og varme drikke",
+      "category": "drinks",
+      "src": "https://cafeemil.dk/wp-content/uploads/2024/12/kaffe-1024x768.jpg"
+    },
+    {
+      "id": "g5",
+      "title": "Gennemførte caféretter",
+      "category": "food",
+      "src": "https://cafeemil.dk/wp-content/uploads/2024/12/emil.jpg"
+    },
+    {
+      "id": "g6",
+      "title": "Møre bøffer og kødretter",
+      "category": "food",
+      "src": "https://cafeemil.dk/wp-content/uploads/2024/12/1212123-776x1024.jpg"
+    },
+    {
+      "id": "g7",
+      "title": "Social stemning og brætspil",
+      "category": "interior",
+      "src": "https://cafeemil.dk/wp-content/uploads/2024/12/emil5.jpg"
+    }
+  ],
+  "faqs": [
+    {
+      "id": "faq-1",
+      "q": "Hvornår serverer I brunch?",
+      "a": "Vi serverer vores populære Klassiske Brunch og Maidens Brunch alle ugens 7 dage fra kl. 10:00 til 14:00. Begge serveres inklusiv et lille glas juice for kun 149 kr."
+    },
+    {
+      "id": "faq-2",
+      "q": "Kan man booke bord på forhånd?",
+      "a": "Ja, du kan nemt booke bord online via vores SeatBooking-integration her på siden, eller ringe direkte på 36 44 74 41. Ved selskaber over 8 personer samt fredag/lørdag aften anbefales det at booke i god tid."
+    },
+    {
+      "id": "faq-3",
+      "q": "Kan man sidde udendørs på terrassen?",
+      "a": "Ja! Vi har en skøn, solrig udendørs terrasse med plads til op til 80 personer. I sommerhalvåret er det et af Valbys mest populære steder at nyde frokost, drinks og kaffe i solen."
+    },
+    {
+      "id": "faq-4",
+      "q": "Må man låne jeres brætspil gratis?",
+      "a": "Ja, absolut! Vi har et bredt udvalg af brætspil – fra Backgammon og skak til klassiske selskabsspil – som alle vores gæster frit kan låne til hyggelige stunder over mad og drikke."
+    },
+    {
+      "id": "faq-5",
+      "q": "Hvor mange gæster kan I have til private selskaber?",
+      "a": "Vi har plads til op til 130 gæster indendørs og 80 gæster på terrassen. Vi skræddersyr gerne særlige selskabsmenuer til fødselsdage, konfirmationer, jubilæer og firmafester."
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "test-1",
+      "name": "Camilla Lindegaard",
+      "role": "Lokal gæst fra Valby",
+      "rating": 5,
+      "quote": "Valbys bedste brunch uden tvivl! Deres Maidens Brunch med de tyrkiske oste og sucuk er simpelthen enestående. Hyggelig atmosfære og super sød betjening hver gang."
+    },
+    {
+      "id": "test-2",
+      "name": "Mads & Frederik",
+      "role": "Stamgæster",
+      "rating": 5,
+      "quote": "Perfekt kombination af fantastiske burgere, kolde fadøl og brætspil. Vi elsker at komme her i weekenden og udfordre hinanden i backgammon over en kurv grovfritter."
+    },
+    {
+      "id": "test-3",
+      "name": "Henrik Vestergaard",
+      "role": "Firma-arrangement",
+      "rating": 5,
+      "quote": "Vi holdt vores afdelingsmiddag hos Café Emil med 45 personer. Maden, ribeye bøfferne og servicen var helt i top. Kan varmt anbefales til selskaber!"
+    }
+  ],
+  "seo": {
+    "/": {
+      "title": "Café Emil | Café & Restaurant i Valby | Brunch, Burgere & Hygge",
+      "description": "Besøg Café Emil i Valby og nyd brunch, frokost, middag, drinks og hyggelig caféstemning. Se menukortet, oplev brætspil og book dit bord hos os.",
+      "keywords": "Café Emil, café i Valby, restaurant i Valby, brunch i Valby, spisested Valby, selskaber Valby, Annexstræde 3"
+    },
+    "/menu": {
+      "title": "Menukort | Café Emil i Valby | Brunch, Burgere, Pasta, Pizza & Grill",
+      "description": "Se hele menukortet for Café Emil i Valby. Udforsk vores brunch, gourmetburgere, friske pastaretter, grillbøffer, sprøde pizzaer og cocktails.",
+      "keywords": "Café Emil menukort, mad Valby, burgere Valby, pizza Valby, pasta Valby, café Valby menu"
+    },
+    "/brunch": {
+      "title": "Brunch i Valby | Klassisk & Maidens Brunch | Café Emil",
+      "description": "Nyd en udsøgt brunch hos Café Emil i Valby alle ugens dage kl. 10:00–14:00. Vælg mellem Klassisk Brunch og Maidens Brunch for kun 149 kr. inkl. juice.",
+      "keywords": "brunch Valby, bedste brunch Valby, weekendbrunch København, Maidens brunch, café brunch"
+    },
+    "/selskaber": {
+      "title": "Selskaber & Private Events i Valby | Op til 130 pers. | Café Emil",
+      "description": "Hold din fødselsdag, konfirmation eller firmafest hos Café Emil i Valby. Plads til 130 gæster indendørs og 80 på vores solrige terrasse. Kontakt os for tilbud.",
+      "keywords": "selskaber Valby, festlokale Valby, konfirmation Valby, fødselsdag restaurant Valby, selskabsmenu"
+    },
+    "/om-os": {
+      "title": "Om Café Emil | Fortællingen om Smag, Hygge og Fællesskab i Valby",
+      "description": "Lær Café Emil at kende. Et lokalt samlingspunkt på Annexstræde 3 i Valby med fokus på gode råvarer, varme omgivelser, socialt samvær og brætspil.",
+      "keywords": "om Café Emil, café historie Valby, mødested Valby, brætspilscafé Valby"
+    },
+    "/kontakt": {
+      "title": "Kontakt Café Emil | Find Vej, Åbningstider & Telefon | Valby",
+      "description": "Find Café Emil på Annexstræde 3, 2500 Valby. Se vores åbningstider, køkkentider og telefonnummer 36 44 74 41. Vi glæder os til at høre fra dig.",
+      "keywords": "kontakt Café Emil, adresse Café Emil, åbningstider Café Emil, telefon 36447441"
+    },
+    "/book-bord": {
+      "title": "Book Bord online | Reserver dit bord hos Café Emil i Valby",
+      "description": "Reserver bord online hos Café Emil via SeatBooking eller ring på 36 44 74 41. Sikr dig en hyggelig plads til brunch, frokost eller aftenhygge.",
+      "keywords": "book bord Café Emil, bordreservation Valby, Seatbooking Café Emil"
+    },
+    "/takeaway": {
+      "title": "Bestil Takeaway i Valby | Nyd maden hjemme | Café Emil",
+      "description": "Bestil takeaway fra Café Emil i Valby. Saftige burgere, pasta, sprøde pizzaer og grillretter klar til afhentning på Annexstræde 3. Ring 36 44 74 41.",
+      "keywords": "takeaway Valby, mad ud af huset Valby, hente mad Valby, burger takeaway"
+    },
+    "/galleri": {
+      "title": "Galleri | Se Billeder af Mad, Stemning & Terrasse | Café Emil",
+      "description": "Få et indblik i den hyggelige stemning hos Café Emil i Valby. Se billeder af vores solrige terrasse, indretning, madretter og sociale stunder.",
+      "keywords": "billeder Café Emil, terrasse Valby, atmosfære Café Emil, madbilleder"
+    }
+  }
+}

@@ -65,3 +65,4 @@ CREATE POLICY "Delete access to cafe-emil-images"
   ON storage.objects FOR DELETE
   TO anon, authenticated, service_role
   USING (bucket_id = 'cafe-emil-images');
+
