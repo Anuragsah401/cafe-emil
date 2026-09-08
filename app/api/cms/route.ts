@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { getServerCmsData, updateCmsData } from '@/lib/cms-server';
 import { AUTH_COOKIE_NAME, verifySessionToken } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
-    const data = getServerCmsData();
+    const data = await getServerCmsData();
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch CMS data' }, { status: 500 });
@@ -25,10 +28,22 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const updated = updateCmsData(body);
+    const updated = await updateCmsData(body);
+
+    // Invalidate Next.js cache across all pages immediately
+    try {
+      revalidatePath('/', 'layout');
+    } catch (e) {
+      console.warn('Cache revalidation notice:', e);
+    }
+
     return NextResponse.json({ success: true, data: updated });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to update CMS data' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error in POST /api/cms:', error);
+    return NextResponse.json(
+      { error: error?.message || 'Failed to update CMS data' },
+      { status: 500 }
+    );
   }
 }
 

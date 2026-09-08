@@ -1,9 +1,10 @@
 import React from 'react';
-import { getCmsData } from '@/lib/cms';
+import { getServerCmsData } from '@/lib/cms-server';
 import HomePageView from '@/components/HomePageView';
 
-export default function HomePage() {
-  const cms = getCmsData();
+export const revalidate = 0;
+
+export default async function HomePage() {
+  const cms = await getServerCmsData();
   return <HomePageView cms={cms} />;
 }
-

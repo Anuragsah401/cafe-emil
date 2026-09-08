@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import fs from 'fs';
 import path from 'path';
+import { put, list, del } from '@vercel/blob';
 import { AUTH_COOKIE_NAME, verifySessionToken } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
@@ -21,6 +24,10 @@ function checkAuth(): boolean {
   return verifySessionToken(token);
 }
 
+function isBlobEnabled(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
 // GET: List all uploaded images
 export async function GET() {
   if (!checkAuth()) {
@@ -28,9 +35,28 @@ export async function GET() {
   }
 
   try {
+    // 1. If Vercel Blob is configured, list from Blob Storage
+    if (isBlobEnabled()) {
+      const { blobs } = await list({ prefix: 'uploads/' });
+      const files = blobs.map((b) => ({
+        name: path.basename(b.pathname),
+        url: b.url,
+        size: b.size,
+        updatedAt: b.uploadedAt.toISOString(),
+      }));
+      files.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      return NextResponse.json({ files });
+    }
+
+    // 2. Otherwise read from local public/uploads directory (local development)
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     if (!fs.existsSync(uploadDir)) {
-      await fs.promises.mkdir(uploadDir, { recursive: true });
+      try {
+        await fs.promises.mkdir(uploadDir, { recursive: true });
+      } catch {
+        // Read-only filesystem
+        return NextResponse.json({ files: [] });
+      }
       return NextResponse.json({ files: [] });
     }
 
@@ -50,9 +76,7 @@ export async function GET() {
         })
     );
 
-    // Sort newest first
     files.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-
     return NextResponse.json({ files });
   } catch (error) {
     console.error('Error listing uploads:', error);
@@ -90,44 +114,84 @@ export async function POST(request: Request) {
       );
     }
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      await fs.promises.mkdir(uploadDir, { recursive: true });
-    }
-
     // Generate safe unique filename
     const origName = file.name || 'image';
     const parsedExt = path.extname(origName).toLowerCase();
-    const ext = parsedExt || (file.type === 'image/jpeg' ? '.jpg' : file.type === 'image/png' ? '.png' : file.type === 'image/webp' ? '.webp' : '.jpg');
-    
-    // Sanitize base name (remove special characters, spaces to hyphens)
-    const baseName = path.basename(origName, parsedExt)
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .slice(0, 40) || 'upload';
+    const ext =
+      parsedExt ||
+      (file.type === 'image/jpeg'
+        ? '.jpg'
+        : file.type === 'image/png'
+        ? '.png'
+        : file.type === 'image/webp'
+        ? '.webp'
+        : '.jpg');
+
+    const baseName =
+      path
+        .basename(origName, parsedExt)
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .slice(0, 40) || 'upload';
 
     const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
     const finalFilename = `${baseName}-${uniqueSuffix}${ext}`;
-    const targetPath = path.join(uploadDir, finalFilename);
 
-    // Convert file to Buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await fs.promises.writeFile(targetPath, buffer);
+    // 1. If Vercel Blob is configured, upload directly to Vercel Blob CDN
+    if (isBlobEnabled()) {
+      const blob = await put(`uploads/${finalFilename}`, file, {
+        access: 'public',
+        addRandomSuffix: false,
+      });
 
-    const publicUrl = `/uploads/${finalFilename}`;
+      return NextResponse.json({
+        success: true,
+        url: blob.url,
+        filename: finalFilename,
+        size: file.size,
+        type: file.type,
+      });
+    }
 
-    return NextResponse.json({
-      success: true,
-      url: publicUrl,
-      filename: finalFilename,
-      size: file.size,
-      type: file.type,
-    });
-  } catch (error) {
+    // 2. Otherwise write to local filesystem (local development)
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    try {
+      if (!fs.existsSync(uploadDir)) {
+        await fs.promises.mkdir(uploadDir, { recursive: true });
+      }
+
+      const targetPath = path.join(uploadDir, finalFilename);
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      await fs.promises.writeFile(targetPath, buffer);
+
+      return NextResponse.json({
+        success: true,
+        url: `/uploads/${finalFilename}`,
+        filename: finalFilename,
+        size: file.size,
+        type: file.type,
+      });
+    } catch (fsErr: any) {
+      console.error('Local filesystem upload failed:', fsErr);
+      if (process.env.VERCEL || fsErr.code === 'EROFS') {
+        return NextResponse.json(
+          {
+            error:
+              'Vercel filsystemet er skrivebeskyttet i produktion. Tilslut "Vercel Blob" under Vercel Dashboard (Storage -> Create -> Blob) for at aktivere direkte billed-upload.',
+          },
+          { status: 500 }
+        );
+      }
+      throw fsErr;
+    }
+  } catch (error: any) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Der opstod en fejl under upload af billedet' }, { status: 500 });
+    return NextResponse.json(
+      { error: error?.message || 'Der opstod en fejl under upload af billedet' },
+      { status: 500 }
+    );
   }
 }
 
@@ -140,12 +204,27 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const filename = searchParams.get('filename');
+    const fileUrl = searchParams.get('url');
 
+    // 1. If Vercel Blob is enabled and we have a blob URL
+    if (isBlobEnabled()) {
+      if (fileUrl && fileUrl.startsWith('http')) {
+        await del(fileUrl);
+        return NextResponse.json({ success: true, message: 'Billede slettet fra Vercel Blob' });
+      } else if (filename) {
+        const { blobs } = await list({ prefix: `uploads/${path.basename(filename)}` });
+        if (blobs.length > 0) {
+          await del(blobs[0].url);
+        }
+        return NextResponse.json({ success: true, message: 'Billede slettet fra Vercel Blob' });
+      }
+    }
+
+    // 2. Otherwise delete from local filesystem
     if (!filename) {
       return NextResponse.json({ error: 'Filnavn mangler' }, { status: 400 });
     }
 
-    // Prevent directory traversal attacks
     const safeFilename = path.basename(filename);
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     const targetPath = path.join(uploadDir, safeFilename);
@@ -161,4 +240,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Kunne ikke slette filen' }, { status: 500 });
   }
 }
-

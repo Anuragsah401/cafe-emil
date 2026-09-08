@@ -31,7 +31,8 @@ import {
   Info,
   UploadCloud,
   FolderOpen,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MediaLibrary from '@/components/admin/MediaLibrary';
@@ -124,6 +125,15 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Storage status on Vercel
+  const [storageStatus, setStorageStatus] = useState<{
+    isVercel: boolean;
+    kvConfigured: boolean;
+    blobConfigured: boolean;
+    readyForProduction: boolean;
+  } | null>(null);
+  const [showStorageGuide, setShowStorageGuide] = useState(false);
+
   // 1. Authenticate check on mount
   useEffect(() => {
     fetch('/api/admin/auth')
@@ -139,6 +149,12 @@ export default function AdminDashboardPage() {
       .catch(() => {
         router.push('/admin/login');
       });
+
+    // Check storage configuration
+    fetch('/api/admin/storage-status')
+      .then((res) => res.json())
+      .then((status) => setStorageStatus(status))
+      .catch(() => {});
   }, [router]);
 
   // Handle Logout
@@ -169,12 +185,13 @@ export default function AdminDashboardPage() {
           router.push('/admin/login');
           return;
         }
-        throw new Error('Save failed');
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || 'Kunne ikke gemme ændringer');
       }
 
       setSaveMessage({ type: 'success', text: 'Alle ændringer er gemt med succes og er live på hjemmesiden!' });
-    } catch (error) {
-      setSaveMessage({ type: 'error', text: 'Kunne ikke gemme ændringer. Kontroller forbindelsen og prøv igen.' });
+    } catch (error: any) {
+      setSaveMessage({ type: 'error', text: error?.message || 'Kunne ikke gemme ændringer. Kontroller forbindelsen og prøv igen.' });
     } finally {
       setSaving(false);
       setTimeout(() => setSaveMessage(null), 5000);
@@ -345,6 +362,112 @@ export default function AdminDashboardPage() {
               <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
             )}
             <span>{saveMessage.text}</span>
+          </div>
+        )}
+
+        {/* Vercel Storage Notice Banner (Shown if KV or Blob is not connected) */}
+        {storageStatus && (!storageStatus.kvConfigured || !storageStatus.blobConfigured) && (
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-page-enter">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-white">
+                    Vercel Cloud Storage Setup
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    {!storageStatus.kvConfigured && !storageStatus.blobConfigured
+                      ? 'KV & Blob mangler'
+                      : !storageStatus.kvConfigured
+                      ? 'KV mangler'
+                      : 'Blob mangler'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-300 mt-0.5">
+                  Vercel filsystem er skrivebeskyttet. Forbind Vercel KV (database) og Blob (billeder) i dit Vercel Dashboard for at gemme live i produktion.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowStorageGuide(true)}
+              className="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-lg shadow-amber-400/20 shrink-0"
+            >
+              <span>Se Guide (1 min)</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Storage Guide Modal */}
+        {showStorageGuide && (
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-[#181415] border border-white/20 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl space-y-6 animate-page-enter">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-amber-400" />
+                  <h3 className="text-lg font-bold text-white">
+                    Sådan aktiverer du Vercel Storage
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowStorageGuide(false)}
+                  className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs text-zinc-300">
+                <p className="text-zinc-300">
+                  På Vercel kører hjemmesiden i et serverless miljø, hvor filsystemet er skrivebeskyttet. For at gemme indhold og uploade billeder skal du blot tilknytte de to gratis Vercel Storage services med ét klik:
+                </p>
+
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                  <div className="font-bold text-white flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px]">1</span>
+                    <span>Tilføj KV / Redis (Gemmer menukort, tekster og priser)</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed">
+                    Gå til dit projekt på <a href="https://vercel.com" target="_blank" rel="noreferrer" className="text-amber-400 underline font-semibold">vercel.com</a> &rarr; Vælg fanen <strong>Storage</strong> &rarr; Klik <strong>Create Database</strong> &rarr; Vælg <strong>KV</strong> (eller Upstash Redis) &rarr; Klik <strong>Create &amp; Connect</strong>.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                  <div className="font-bold text-white flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px]">2</span>
+                    <span>Tilføj Blob (Gemmer uploadede fotos og billeder)</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed">
+                    I samme <strong>Storage</strong> fane &rarr; Klik <strong>Create Database</strong> &rarr; Vælg <strong>Blob</strong> &rarr; Klik <strong>Create &amp; Connect</strong>.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                  <div className="font-bold text-white flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-400 text-black font-bold flex items-center justify-center text-[10px]">3</span>
+                    <span>Færdig!</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed">
+                    Vercel indsætter automatisk miljøvariablerne for dig. Udrulningen opdaterer sig selv, og du kan nu ændre alt indhold og uploade billeder live uden fejl!
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowStorageGuide(false)}
+                  className="px-6 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-bold text-xs uppercase tracking-wider transition-colors"
+                >
+                  Forstået
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

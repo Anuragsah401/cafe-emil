@@ -2,9 +2,11 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getCmsData } from '@/lib/cms';
+import { getServerCmsData } from '@/lib/cms-server';
 import MenuBrowser from '@/components/MenuBrowser';
 import { ChevronLeft, Calendar } from 'lucide-react';
+
+export const revalidate = 0;
 
 interface CategoryPageProps {
   params: {
@@ -13,14 +15,14 @@ interface CategoryPageProps {
 }
 
 export async function generateStaticParams() {
-  const cms = getCmsData();
+  const cms = await getServerCmsData();
   return cms.menuCategories.map((cat) => ({
     category: cat.slug,
   }));
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const cms = getCmsData();
+  const cms = await getServerCmsData();
   const cat = cms.menuCategories.find((c) => c.slug === params.category || c.id === params.category);
 
   if (!cat) {
@@ -44,8 +46,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   };
 }
 
-export default function CategoryMenuPage({ params }: CategoryPageProps) {
-  const cms = getCmsData();
+export default async function CategoryMenuPage({ params }: CategoryPageProps) {
+  const cms = await getServerCmsData();
   const cat = cms.menuCategories.find((c) => c.slug === params.category || c.id === params.category);
 
   if (!cat) {

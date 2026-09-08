@@ -1,10 +1,12 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { getCmsData } from '@/lib/cms';
+import { getServerCmsData } from '@/lib/cms-server';
 import BookBordPageView from '@/components/BookBordPageView';
 
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
-  const cms = getCmsData();
+  const cms = await getServerCmsData();
   const seo = cms.seo['/book-bord'] || {
     title: 'Book Bord online | Reserver dit bord hos Café Emil i Valby',
     description: 'Reserver bord online hos Café Emil via SeatBooking eller ring på 36 44 74 41.',
@@ -26,8 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function BookBordPage() {
-  const cms = getCmsData();
+export default async function BookBordPage() {
+  const cms = await getServerCmsData();
   return <BookBordPageView cms={cms} />;
 }
-

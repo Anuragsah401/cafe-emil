@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const isValid = validateLogin(username, password);
+    const isValid = await validateLogin(username, password);
     if (!isValid) {
       return NextResponse.json(
         { error: 'Ugyldigt brugernavn eller adgangskode' },
@@ -117,7 +117,7 @@ export async function PUT(request: Request) {
     }
 
     // Verify current password first
-    const isCurrentValid = validateLogin(username || 'admin', currentPassword);
+    const isCurrentValid = await validateLogin(username || 'admin', currentPassword);
     if (!isCurrentValid) {
       return NextResponse.json(
         { error: 'Nuværende adgangskode er forkert' },
@@ -125,7 +125,7 @@ export async function PUT(request: Request) {
       );
     }
 
-    saveCredentials(username || 'admin', newPassword);
+    await saveCredentials(username || 'admin', newPassword);
 
     // Issue refreshed session cookie
     const newToken = createSessionToken(username || 'admin');

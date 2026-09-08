@@ -1,11 +1,13 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { getCmsData } from '@/lib/cms';
+import { getServerCmsData } from '@/lib/cms-server';
 import MenuBrowser from '@/components/MenuBrowser';
 import { Utensils, Clock, AlertCircle } from 'lucide-react';
 
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
-  const cms = getCmsData();
+  const cms = await getServerCmsData();
   const seo = cms.seo['/menu'] || {
     title: 'Menukort | Café Emil i Valby',
     description: 'Se vores fulde menukort med brunch, burgere, pasta, steaks, pizza og drikkevarer.',
@@ -27,8 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function MenuPage() {
-  const cms = getCmsData();
+export default async function MenuPage() {
+  const cms = await getServerCmsData();
 
   return (
     <div className="pt-32 pb-24 bg-yumix-bg text-white min-h-screen">

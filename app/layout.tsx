@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { getCmsData } from '@/lib/cms';
+import { getServerCmsData } from '@/lib/cms-server';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import MobileFloatingBar from '@/components/MobileFloatingBar';
 import RestaurantJsonLd from '@/components/RestaurantJsonLd';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const cms = getCmsData();
+  const cms = await getServerCmsData();
   const homeSeo = cms.seo['/'] || {
     title: 'Café Emil | Café & Restaurant i Valby',
     description: 'Besøg Café Emil i Valby og nyd brunch, frokost, middag, drinks og hyggelig caféstemning.',
@@ -51,12 +51,12 @@ export async function generateMetadata(): Promise<Metadata> {
 import SmoothScrollProvider from '@/components/SmoothScroll';
 import AmbientSoundPlayer from '@/components/AmbientSoundPlayer';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cms = getCmsData();
+  const cms = await getServerCmsData();
 
   return (
     <html lang="da" className="scroll-smooth">

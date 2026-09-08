@@ -45,7 +45,7 @@
       {
         "id": "mon-thu",
         "days": "Mandag – Torsdag",
-        "open": "10:30",
+        "open": "10:00",
         "close": "23:00",
         "kitchenClose": "22:30",
         "daysOfWeek": [

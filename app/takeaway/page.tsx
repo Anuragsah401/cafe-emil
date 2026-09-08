@@ -1,11 +1,13 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getCmsData } from '@/lib/cms';
+import { getServerCmsData } from '@/lib/cms-server';
 import { ShoppingBag, Phone, Utensils } from 'lucide-react';
 
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
-  const cms = getCmsData();
+  const cms = await getServerCmsData();
   const seo = cms.seo['/takeaway'] || {
     title: 'Bestil Takeaway i Valby | Nyd maden derhjemme | Café Emil',
     description: 'Bestil lækker takeaway fra Café Emil i Valby. Burgere, pasta, sprøde pizzaer og grillretter. Ring på 36 44 74 41.',
@@ -22,8 +24,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function TakeawayPage() {
-  const cms = getCmsData();
+export default async function TakeawayPage() {
+  const cms = await getServerCmsData();
   const { restaurant, sections } = cms;
 
   const popularTakeaways = cms.menuItems

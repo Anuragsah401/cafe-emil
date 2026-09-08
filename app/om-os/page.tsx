@@ -1,11 +1,13 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getCmsData } from '@/lib/cms';
+import { getServerCmsData } from '@/lib/cms-server';
 import { Heart, Sparkles, Users, Coffee, Dices, Calendar } from 'lucide-react';
 
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
-  const cms = getCmsData();
+  const cms = await getServerCmsData();
   const seo = cms.seo['/om-os'] || {
     title: 'Om Café Emil | Fortællingen om Smag, Hygge og Fællesskab i Valby',
     description: 'Lær Café Emil at kende. Et lokalt samlingspunkt på Annexstræde 3 i Valby.',
@@ -28,8 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function AboutPage() {
-  const cms = getCmsData();
+export default async function AboutPage() {
+  const cms = await getServerCmsData();
   const { restaurant, sections } = cms;
 
   return (

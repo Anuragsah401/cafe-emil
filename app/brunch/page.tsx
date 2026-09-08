@@ -1,11 +1,13 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getCmsData } from '@/lib/cms';
+import { getServerCmsData } from '@/lib/cms-server';
 import { Calendar, Clock, MapPin, Check, Sparkles, Phone } from 'lucide-react';
 
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
-  const cms = getCmsData();
+  const cms = await getServerCmsData();
   const seo = cms.seo['/brunch'] || {
     title: 'Brunch i Valby | Klassisk & Maidens Brunch | Café Emil',
     description: 'Nyd brunch hos Café Emil i Valby alle dage kl. 10:00–14:00. Klassisk og Maidens brunch for 149 kr. inkl. juice.',
@@ -28,8 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function BrunchPage() {
-  const cms = getCmsData();
+export default async function BrunchPage() {
+  const cms = await getServerCmsData();
 
   return (
     <div className="pt-32 pb-24 bg-yumix-bg text-white min-h-screen">
