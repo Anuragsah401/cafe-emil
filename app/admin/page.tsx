@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -28,8 +28,13 @@ import {
   Check,
   AlertCircle,
   ChevronRight,
-  Info
+  Info,
+  UploadCloud,
+  FolderOpen,
+  Loader2
 } from 'lucide-react';
+import ImageUploader from '@/components/admin/ImageUploader';
+import MediaLibrary from '@/components/admin/MediaLibrary';
 import {
   CmsData,
   MenuItem,
@@ -48,6 +53,7 @@ type AdminTab =
   | 'testimonials'
   | 'faqs'
   | 'gallery'
+  | 'media'
   | 'seo'
   | 'security';
 
@@ -71,6 +77,52 @@ export default function AdminDashboardPage() {
   const [pwdConfirm, setPwdConfirm] = useState('');
   const [pwdStatus, setPwdStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [pwdLoading, setPwdLoading] = useState(false);
+
+  // Gallery bulk upload state
+  const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
+
+  const handleGalleryUpload = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0 || !data) return;
+    setIsGalleryUploading(true);
+    const newItems: GalleryItem[] = [];
+
+    for (const file of Array.from(fileList)) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const json = await res.json();
+        if (res.ok && json.url) {
+          const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+          newItems.push({
+            id: `g-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            title: cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1),
+            category: 'food',
+            src: json.url,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to upload gallery file:', err);
+      }
+    }
+
+    if (newItems.length > 0) {
+      setData({
+        ...data,
+        gallery: [...newItems, ...data.gallery],
+      });
+      setSaveMessage({ type: 'success', text: `${newItems.length} nye galleribilleder uploadet! Husk at klikke 'Gem Alle Ændringer'.` });
+      setTimeout(() => setSaveMessage(null), 5000);
+    }
+    setIsGalleryUploading(false);
+    if (galleryFileInputRef.current) {
+      galleryFileInputRef.current.value = '';
+    }
+  };
 
   // 1. Authenticate check on mount
   useEffect(() => {
@@ -308,6 +360,7 @@ export default function AdminDashboardPage() {
             { id: 'testimonials', label: 'Anmeldelser', icon: Star },
             { id: 'faqs', label: 'FAQ', icon: HelpCircle },
             { id: 'gallery', label: 'Galleri', icon: ImageIcon },
+            { id: 'media', label: 'Mediearkiv', icon: FolderOpen },
             { id: 'seo', label: 'SEO & Metadata', icon: Search },
             { id: 'security', label: 'Sikkerhed & Kode', icon: Key },
           ].map((tab) => {
@@ -870,13 +923,11 @@ export default function AdminDashboardPage() {
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-zinc-300 uppercase">Billede URL</label>
-                      <input
-                        type="text"
+                      <ImageUploader
+                        label="Ret Billede"
                         value={editingItem.image || ''}
-                        onChange={(e) => setEditingItem({ ...editingItem, image: e.target.value })}
-                        placeholder="https://..."
-                        className="w-full mt-1 px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white font-mono"
+                        onChange={(url) => setEditingItem({ ...editingItem, image: url })}
+                        description="Upload et appetitvækkende billede af retten direkte fra din computer eller telefon."
                       />
                     </div>
                   </div>
@@ -1009,11 +1060,10 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-300 uppercase">Plakat Billede Fallback URL</label>
-                  <input
-                    type="text"
+                  <ImageUploader
+                    label="Plakat Billede Fallback"
                     value={data.sections.hero.videoBackground?.posterImage || ''}
-                    onChange={(e) =>
+                    onChange={(url) =>
                       setData({
                         ...data,
                         sections: {
@@ -1028,13 +1078,13 @@ export default function AdminDashboardPage() {
                                 startTime: 0,
                                 endTime: 39,
                               }),
-                              posterImage: e.target.value,
+                              posterImage: url,
                             },
                           },
                         },
                       })
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white font-mono"
+                    description="Baggrundsbillede der vises inden videoen afspilles eller hvis video ikke understøttes."
                   />
                 </div>
               </div>
@@ -1443,45 +1493,93 @@ export default function AdminDashboardPage() {
                   <span>Galleri Billeder ({data.gallery.length})</span>
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Styr billederne i fotogalleriet på forside og på /galleri.
+                  Styr billederne i fotogalleriet på forside og på /galleri. Upload nye fotos direkte fra computer eller telefon.
                 </p>
               </div>
 
-              <button
-                onClick={() => {
-                  const newItem: GalleryItem = {
-                    id: `g-${Date.now()}`,
-                    title: 'Nyt Billede',
-                    category: 'food',
-                    src: 'https://cafeemil.dk/wp-content/uploads/2024/12/332323.jpg',
-                  };
-                  setData({
-                    ...data,
-                    gallery: [newItem, ...data.gallery],
-                  });
-                }}
-                className="px-4 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-red-600/25 self-start sm:self-auto"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Tilføj Billede</span>
-              </button>
+              {/* Hidden file input for multi-upload into gallery */}
+              <input
+                ref={galleryFileInputRef}
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/svg+xml"
+                className="hidden"
+                onChange={(e) => handleGalleryUpload(e.target.files)}
+              />
+
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <button
+                  type="button"
+                  disabled={isGalleryUploading}
+                  onClick={() => galleryFileInputRef.current?.click()}
+                  className="px-4 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-red-600/25 disabled:opacity-50"
+                >
+                  {isGalleryUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Uploader...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud className="w-4 h-4" />
+                      <span>Upload Nye Billeder</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newItem: GalleryItem = {
+                      id: `g-${Date.now()}`,
+                      title: 'Nyt Billede',
+                      category: 'food',
+                      src: 'https://cafeemil.dk/wp-content/uploads/2024/12/332323.jpg',
+                    };
+                    setData({
+                      ...data,
+                      gallery: [newItem, ...data.gallery],
+                    });
+                  }}
+                  className="px-3 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  title="Tilføj billede manuelt via URL"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">Manuel URL</span>
+                </button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.gallery.map((item, idx) => (
-                <div key={item.id || idx} className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
-                  <div className="h-40 rounded-xl overflow-hidden bg-black/50 relative border border-white/10">
-                    <img
-                      src={item.src}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as any).src = '/images/cafeemil-logo.png';
-                      }}
-                    />
-                  </div>
+            {/* Drag and drop banner for gallery */}
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                handleGalleryUpload(e.dataTransfer.files);
+              }}
+              onClick={() => !isGalleryUploading && galleryFileInputRef.current?.click()}
+              className="border border-dashed border-white/15 hover:border-amber-400/40 bg-white/[0.02] hover:bg-white/5 rounded-2xl p-4 text-center cursor-pointer transition-all"
+            >
+              <div className="flex items-center justify-center gap-2 text-xs text-zinc-400">
+                <UploadCloud className="w-4 h-4 text-amber-400" />
+                <span>Træk og slip billedfiler her for at tilføje dem direkte til galleriet</span>
+              </div>
+            </div>
 
-                  <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {data.gallery.map((item, idx) => (
+                <div key={item.id || idx} className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+                  <ImageUploader
+                    label={`Billede #${idx + 1}`}
+                    value={item.src}
+                    onChange={(url) => {
+                      const updated = [...data.gallery];
+                      updated[idx].src = url;
+                      setData({ ...data, gallery: updated });
+                    }}
+                  />
+
+                  <div className="space-y-2 pt-1 border-t border-white/5">
                     <div>
                       <label className="block text-[10px] uppercase font-bold text-zinc-400">Billedtitel</label>
                       <input
@@ -1496,7 +1594,7 @@ export default function AdminDashboardPage() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 pt-1">
                       <div>
                         <label className="block text-[10px] uppercase font-bold text-zinc-400">Kategori</label>
                         <select
@@ -1517,35 +1615,31 @@ export default function AdminDashboardPage() {
 
                       <div className="flex items-end">
                         <button
+                          type="button"
                           onClick={() => {
                             const updated = data.gallery.filter((_, i) => i !== idx);
                             setData({ ...data, gallery: updated });
                           }}
-                          className="w-full py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold flex items-center justify-center gap-1"
+                          className="w-full py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Slet</span>
                         </button>
                       </div>
                     </div>
-
-                    <div>
-                      <label className="block text-[10px] uppercase font-bold text-zinc-400">Billede URL</label>
-                      <input
-                        type="text"
-                        value={item.src}
-                        onChange={(e) => {
-                          const updated = [...data.gallery];
-                          updated[idx].src = e.target.value;
-                          setData({ ...data, gallery: updated });
-                        }}
-                        className="w-full mt-1 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] text-zinc-300 font-mono"
-                      />
-                    </div>
                   </div>
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 8: MEDIEARKIV & BILLEDER
+            ======================================================== */}
+        {activeTab === 'media' && (
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
+            <MediaLibrary />
           </div>
         )}
 
