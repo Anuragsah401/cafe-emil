@@ -287,7 +287,7 @@ export default function HomePageView({ cms }: HomePageViewProps) {
           </div>
 
           {/* Category Chips Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3">
+          <div className="fade-up grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3">
             {[
               { id: 'brunch', name: 'Brunch', icon: '🍳', count: '10-14' },
               { id: 'burgere', name: 'Burgere', icon: '🍔', count: '180g okse' },
@@ -298,13 +298,13 @@ export default function HomePageView({ cms }: HomePageViewProps) {
               { id: 'pasta', name: 'Pasta', icon: '🍝', count: 'Hjemmelavet' },
               { id: 'desserter', name: 'Desserter', icon: '🍰', count: 'Kager' },
               { id: 'drikkevarer', name: 'Drikke', icon: '🍸', count: 'Cocktails' },
-            ].map((cat, idx) => {
+            ].map((cat) => {
               const isSelected = selectedCategoryTab === cat.id;
               return (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategoryTab(cat.id)}
-                  className={`fade-up delay-${(idx % 5) + 1} p-4 rounded-2xl border transition-all duration-200 flex flex-col items-center justify-center text-center group ${
+                  className={`p-4 rounded-2xl border transition-all duration-200 flex flex-col items-center justify-center text-center group cursor-pointer ${
                     isSelected
                       ? 'bg-emil-red text-white border-emil-red shadow-lg shadow-red-600/30 scale-105'
                       : 'bg-yumix-bg text-white border-white/10 hover:border-emil-red/40 hover:bg-white/5'
@@ -353,11 +353,11 @@ export default function HomePageView({ cms }: HomePageViewProps) {
           </div>
 
           {/* Dishes Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {previewDishes.map((dish, idx) => (
+          <div className="fade-up grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {previewDishes.map((dish) => (
               <div
                 key={dish.id}
-                className={`fade-up delay-${(idx % 3) + 1} bg-yumix-card rounded-3xl p-5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1 group flex flex-col justify-between shadow-xl`}
+                className="animate-fade-in bg-yumix-card rounded-3xl p-5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1 group flex flex-col justify-between shadow-xl"
               >
                 <div>
                   {/* Photo container */}
@@ -727,13 +727,13 @@ export default function HomePageView({ cms }: HomePageViewProps) {
             </h2>
           </div>
 
-          <div className="space-y-3">
+          <div className="fade-up space-y-3">
             {faqs.map((faq, idx) => {
               const isOpen = openFaq === idx;
               return (
                 <div
                   key={idx}
-                  className={`fade-up delay-${(idx % 4) + 1} bg-yumix-card rounded-2xl border border-white/10 overflow-hidden transition-all`}
+                  className="bg-yumix-card rounded-2xl border border-white/10 overflow-hidden transition-all"
                 >
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : idx)}

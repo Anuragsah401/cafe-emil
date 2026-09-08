@@ -30,39 +30,48 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProps) {
         });
       },
       {
-        threshold: 0.1,
-        rootMargin: '0px 0px -40px 0px', // Triggers visibly when item is 40px inside viewport
+        threshold: 0.05,
+        rootMargin: '0px 0px -20px 0px',
       }
     );
 
-    const observeElements = () => {
-      const targets = document.querySelectorAll(
-        '.fade-up, .reveal-on-scroll, .fade-on-scroll, [data-reveal], section > div.max-w-7xl, section > div.max-w-4xl, .dish-card, .review-card, .category-chip'
-      );
+    const checkAndObserve = () => {
+      const targets = document.querySelectorAll('.fade-up, .reveal-on-scroll, .fade-on-scroll');
 
       targets.forEach((el) => {
-        if (!el.classList.contains('fade-up')) {
-          el.classList.add('fade-up');
-        }
+        if (el.classList.contains('is-in-view')) return;
 
         const rect = el.getBoundingClientRect();
-        // If element is already in the viewport on initial mount (e.g. Hero content), show it immediately
+        // If element is already in the viewport, make it visible immediately
         if (rect.top < window.innerHeight && rect.bottom > 0) {
           el.classList.add('is-in-view');
-        } else if (!el.classList.contains('is-in-view')) {
+        } else {
           revealObserver.observe(el);
         }
       });
     };
 
-    observeElements();
-    const timer1 = setTimeout(observeElements, 150);
-    const timer2 = setTimeout(observeElements, 600);
+    checkAndObserve();
+    const timer1 = setTimeout(checkAndObserve, 150);
+    const timer2 = setTimeout(checkAndObserve, 600);
+
+    // Watch for DOM mutations (e.g. dynamic state updates or newly rendered elements)
+    const mutationObserver = new MutationObserver(() => {
+      checkAndObserve();
+    });
+
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+    });
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       revealObserver.disconnect();
+      mutationObserver.disconnect();
     };
   }, [pathname]);
 
