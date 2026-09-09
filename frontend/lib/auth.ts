@@ -7,10 +7,11 @@ const SECRET_KEY =
   process.env.JWT_SECRET ||
   'cafeemil_jwt_secret_token_valby_2025_secure_key';
 
-const BACKEND_URL =
+const rawBackendUrl =
   process.env.BACKEND_URL ||
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   'http://localhost:5001';
+const BACKEND_URL = rawBackendUrl.replace(/\/+$/, '');
 
 // Delegate login verification to backend
 export async function validateLogin(username: string, passwordPlain: string): Promise<{ success: boolean; token?: string; error?: string }> {

@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const BACKEND_URL =
+const rawBackendUrl =
   process.env.BACKEND_URL ||
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   'http://localhost:5001';
+const BACKEND_URL = rawBackendUrl.replace(/\/+$/, '');
 
 export async function GET() {
   let backendOnline = false;

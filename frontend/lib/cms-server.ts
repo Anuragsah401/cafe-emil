@@ -1,9 +1,10 @@
 import { CmsData, getCmsData } from './cms';
 
-const BACKEND_URL =
+const rawBackendUrl =
   process.env.BACKEND_URL ||
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   'http://localhost:5001';
+const BACKEND_URL = rawBackendUrl.replace(/\/+$/, '');
 
 export async function getServerCmsData(): Promise<CmsData> {
   const urls = [BACKEND_URL];

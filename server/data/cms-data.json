@@ -792,9 +792,9 @@
   ],
   "restaurant": {
     "city": "Valby",
-    "name": "Café Emil",
+    "name": "Café Emi",
     "email": "info@cafeemil.dk",
-    "phone": "36 44 74 41",
+    "phone": "36 44 74 56",
     "country": "Danmark",
     "logoUrl": "/images/cafeemil-logo.png",
     "tagline": "Valby's hyggelige café & restaurant",
@@ -855,7 +855,7 @@
           "Friday",
           "Saturday"
         ],
-        "kitchenClose": "23:20"
+        "kitchenClose": "23:30"
       },
       {
         "id": "sun",
@@ -865,7 +865,7 @@
         "daysOfWeek": [
           "Sunday"
         ],
-        "kitchenClose": "22:20"
+        "kitchenClose": "22:30"
       }
     ],
     "brunchHours": "Alle dage: 10:00 – 14:00",

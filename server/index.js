@@ -24,17 +24,23 @@ const JWT_SECRET = process.env.JWT_SECRET || "cafeemil_jwt_secret_token_valby_20
 // CORS configuration
 const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000,http://localhost:3005")
   .split(",")
-  .map((url) => url.trim());
+  .map((url) => url.trim().replace(/\/+$/, ""));
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or same-origin proxy)
+      // Allow requests with no origin (like mobile apps, curl, or server-side proxy)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+      const cleanOrigin = origin.replace(/\/+$/, "");
+      if (
+        allowedOrigins.includes(cleanOrigin) ||
+        allowedOrigins.includes("*") ||
+        cleanOrigin.includes("vercel.app") ||
+        cleanOrigin.includes("cafeemil.dk")
+      ) {
         return callback(null, true);
       }
-      return callback(null, true); // Permissive in development
+      return callback(null, true);
     },
     credentials: true,
   }),
