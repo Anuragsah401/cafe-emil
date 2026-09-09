@@ -161,14 +161,13 @@ export default function Navbar({ restaurant }: NavbarProps) {
 
           {/* Right Actions: CTA + Mobile Hamburger */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Book bord CTA Button */}
+            {/* Book bord CTA Button (Desktop only - mobile uses drawer & bottom floating bar) */}
             <button
               onClick={() => setIsBookingOpen(true)}
-              className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-bold text-xs uppercase tracking-wider active:scale-95 transition-all shadow-md shadow-red-600/30 flex items-center gap-1.5"
+              className="hidden md:flex px-4 sm:px-5 py-2 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-bold text-xs uppercase tracking-wider active:scale-95 transition-all shadow-md shadow-red-600/30 items-center gap-1.5"
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline sm:inline">Book bord</span>
-              <span className="xs:hidden sm:hidden">Book</span>
+              <span>Book bord</span>
             </button>
 
             {/* Mobile Menu Toggle Button */}
