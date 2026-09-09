@@ -148,19 +148,18 @@ export default function Navbar({ restaurant }: NavbarProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`group relative px-3.5 lg:px-4 py-2 rounded-full transition-all duration-200 ease-out font-bold ${
+                  className={`group relative px-3.5 lg:px-4 py-2 rounded-full transition-all duration-200 ease-out font-bold border ${
                     isActive
-                      ? 'text-white'
-                      : 'text-zinc-300 hover:text-white hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 active:scale-95'
+                      ? 'text-white bg-white/10 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                      : 'text-zinc-300 border-transparent hover:text-white hover:bg-white/10 hover:border-white/15 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 active:scale-95'
                   }`}
                 >
                   <span className="relative z-10">{link.label}</span>
-                  {isActive && (
-                    <span className="absolute inset-x-3.5 bottom-1.5 h-0.5 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.7)]" />
-                  )}
-                  {!isActive && (
-                    <span className="absolute inset-x-3.5 bottom-1.5 h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full" />
-                  )}
+                  <span
+                    className={`absolute inset-x-3.5 bottom-1.5 h-0.5 bg-gradient-to-r from-transparent via-white/50 to-transparent transition-opacity duration-200 rounded-full ${
+                      isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    }`}
+                  />
                 </Link>
               );
             })}
