@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { MenuCategory, MenuItem, RestaurantInfo } from '@/lib/cms';
 import SeatBookingModal from '@/components/SeatBookingModal';
+import DishDetailModal from '@/components/DishDetailModal';
 
 interface MenuBrowserProps {
   categories: MenuCategory[];
@@ -67,6 +68,7 @@ export default function MenuBrowser({
   const [activeCategory, setActiveCategory] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
+  const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
 
   const isSearching = searchQuery.trim().length > 0;
 
@@ -324,7 +326,8 @@ export default function MenuBrowser({
                     return (
                       <article
                         key={dish.id}
-                        className="group relative bg-gradient-to-b from-[#1c1517] to-[#130e10] rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-white/25 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:shadow-red-950/20 overflow-hidden"
+                        onClick={() => setSelectedDish(dish)}
+                        className="group relative bg-gradient-to-b from-[#1c1517] to-[#130e10] rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-white/25 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:shadow-red-950/20 overflow-hidden cursor-pointer"
                       >
                         <div>
                           {/* Dish Image Container (if available) */}
@@ -423,7 +426,10 @@ export default function MenuBrowser({
                           {/* Quick Book Bord Button */}
                           <button
                             type="button"
-                            onClick={() => setIsBookingOpen(true)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsBookingOpen(true);
+                            }}
                             className="inline-flex items-center gap-1 text-[11px] font-bold text-zinc-400 hover:text-white py-1 px-2.5 rounded-full hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
                             aria-label={`Book bord til ${dish.name}`}
                           >
@@ -440,6 +446,16 @@ export default function MenuBrowser({
           })}
         </div>
       )}
+
+      {/* Dish Detail Popup Modal */}
+      <DishDetailModal
+        dish={selectedDish}
+        isOpen={Boolean(selectedDish)}
+        onClose={() => setSelectedDish(null)}
+        categoryName={categories.find(c => c.id === selectedDish?.categoryId || c.slug === selectedDish?.categoryId)?.name}
+        onBookTable={() => setIsBookingOpen(true)}
+        restaurantPhone={restaurant?.phone}
+      />
 
       {/* SeatBooking Modal for Quick Table Reservations */}
       <SeatBookingModal

@@ -23,8 +23,9 @@ import {
   Flame,
   Award
 } from 'lucide-react';
-import { CmsData } from '@/lib/cms';
+import { CmsData, MenuItem } from '@/lib/cms';
 import SeatBookingModal from './SeatBookingModal';
+import DishDetailModal from './DishDetailModal';
 
 interface HomePageViewProps {
   cms: CmsData;
@@ -32,6 +33,7 @@ interface HomePageViewProps {
 
 export default function HomePageView({ cms }: HomePageViewProps) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
   const [selectedCategoryTab, setSelectedCategoryTab] = useState('brunch');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -329,7 +331,8 @@ export default function HomePageView({ cms }: HomePageViewProps) {
             {previewDishes.map((dish) => (
               <div
                 key={dish.id}
-                className="animate-fade-in bg-yumix-card rounded-3xl p-5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1 group flex flex-col justify-between shadow-xl"
+                onClick={() => setSelectedDish(dish)}
+                className="animate-fade-in bg-yumix-card rounded-3xl p-5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1 group flex flex-col justify-between shadow-xl cursor-pointer"
               >
                 <div>
                   {/* Photo container */}
@@ -375,7 +378,10 @@ export default function HomePageView({ cms }: HomePageViewProps) {
 
                   <button
                     type="button"
-                    onClick={() => setIsBookingOpen(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsBookingOpen(true);
+                    }}
                     className="px-4 py-2 rounded-full bg-white/10 hover:bg-emil-red hover:text-white text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95"
                   >
                     <span>Book bord</span>
@@ -835,6 +841,16 @@ export default function HomePageView({ cms }: HomePageViewProps) {
           </div>
         </div>
       </section>
+
+      {/* Dish Detail Modal */}
+      <DishDetailModal
+        dish={selectedDish}
+        isOpen={Boolean(selectedDish)}
+        onClose={() => setSelectedDish(null)}
+        categoryName={menuCategories.find(c => c.slug === selectedDish?.categoryId || c.id === selectedDish?.categoryId)?.name}
+        onBookTable={() => setIsBookingOpen(true)}
+        restaurantPhone={restaurant?.phone}
+      />
 
       {/* SeatBooking Modal */}
       <SeatBookingModal
