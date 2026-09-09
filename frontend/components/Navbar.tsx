@@ -179,10 +179,10 @@ export default function Navbar({ restaurant }: NavbarProps) {
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`md:hidden w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90 ${
+              className={`md:hidden group relative w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-200 active:scale-90 ${
                 isOpen
-                  ? 'bg-white/15 border-white/25 text-white shadow-inner'
-                  : 'bg-white/5 hover:bg-white/10 border-white/10 text-zinc-300 hover:text-white'
+                  ? 'bg-gradient-to-br from-red-600 to-emil-red border-red-400 text-white shadow-[0_0_15px_rgba(215,42,22,0.4)]'
+                  : 'bg-red-500/10 hover:bg-red-500/20 border-red-500/30 hover:border-red-500/50 text-red-400 hover:text-red-300 shadow-[0_0_12px_rgba(239,68,68,0.2)] hover:shadow-[0_0_18px_rgba(239,68,68,0.35)]'
               }`}
               aria-label={isOpen ? 'Luk menu' : 'Åbn menu'}
               aria-expanded={isOpen}
@@ -190,7 +190,7 @@ export default function Navbar({ restaurant }: NavbarProps) {
               {isOpen ? (
                 <X className="w-4 h-4 transition-transform duration-200 rotate-90" />
               ) : (
-                <Menu className="w-4 h-4 transition-transform duration-200" />
+                <Menu className="w-4 h-4 transition-all duration-200 group-hover:scale-110 drop-shadow-[0_1px_4px_rgba(239,68,68,0.35)]" />
               )}
             </button>
           </div>
