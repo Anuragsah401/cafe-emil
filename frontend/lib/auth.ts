@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { getBackendUrl } from './backend-url';
 
 export const AUTH_COOKIE_NAME = 'cafeemil_admin_session';
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
@@ -7,16 +8,11 @@ const SECRET_KEY =
   process.env.JWT_SECRET ||
   'cafeemil_jwt_secret_token_valby_2025_secure_key';
 
-const rawBackendUrl =
-  process.env.BACKEND_URL ||
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  'http://localhost:5001';
-const BACKEND_URL = rawBackendUrl.replace(/\/+$/, '');
-
 // Delegate login verification to backend
 export async function validateLogin(username: string, passwordPlain: string): Promise<{ success: boolean; token?: string; error?: string }> {
-  const urls = [BACKEND_URL];
-  if (!urls.includes('http://localhost:5001')) {
+  const backendUrl = getBackendUrl();
+  const urls = [backendUrl];
+  if (backendUrl !== 'http://localhost:5001' && process.env.NODE_ENV !== 'production') {
     urls.push('http://localhost:5001');
   }
 
@@ -59,8 +55,9 @@ export async function changePasswordWithBackend(
   newPassword: string,
   token?: string
 ): Promise<{ success: boolean; token?: string; error?: string }> {
-  const urls = [BACKEND_URL];
-  if (!urls.includes('http://localhost:5001')) {
+  const backendUrl = getBackendUrl();
+  const urls = [backendUrl];
+  if (backendUrl !== 'http://localhost:5001' && process.env.NODE_ENV !== 'production') {
     urls.push('http://localhost:5001');
   }
 

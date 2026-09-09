@@ -1,14 +1,10 @@
 import { CmsData, getCmsData } from './cms';
-
-const rawBackendUrl =
-  process.env.BACKEND_URL ||
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  'http://localhost:5001';
-const BACKEND_URL = rawBackendUrl.replace(/\/+$/, '');
+import { getBackendUrl } from './backend-url';
 
 export async function getServerCmsData(): Promise<CmsData> {
-  const urls = [BACKEND_URL];
-  if (!urls.includes('http://localhost:5001')) {
+  const backendUrl = getBackendUrl();
+  const urls = [backendUrl];
+  if (backendUrl !== 'http://localhost:5001' && process.env.NODE_ENV !== 'production') {
     urls.push('http://localhost:5001');
   }
 
@@ -16,7 +12,7 @@ export async function getServerCmsData(): Promise<CmsData> {
     try {
       const res = await fetch(`${url}/api/cms`, {
         cache: 'no-store',
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(12000),
       });
 
       if (res.ok) {
@@ -41,8 +37,9 @@ export async function updateCmsData(newData: Partial<CmsData>, token?: string): 
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const urls = [BACKEND_URL];
-  if (!urls.includes('http://localhost:5001')) {
+  const backendUrl = getBackendUrl();
+  const urls = [backendUrl];
+  if (backendUrl !== 'http://localhost:5001' && process.env.NODE_ENV !== 'production') {
     urls.push('http://localhost:5001');
   }
 
@@ -53,6 +50,7 @@ export async function updateCmsData(newData: Partial<CmsData>, token?: string): 
         method: 'POST',
         headers,
         body: JSON.stringify(newData),
+        signal: AbortSignal.timeout(20000),
       });
 
       if (res.ok) {
@@ -60,10 +58,10 @@ export async function updateCmsData(newData: Partial<CmsData>, token?: string): 
         return json.data;
       } else {
         const err = await res.json().catch(() => ({}));
-        lastError = err.error || `Fejl fra server (${res.status})`;
+        lastError = err.error || `Serverfejl (${res.status})`;
       }
     } catch (e: any) {
-      lastError = e?.message || 'Server utilgængelig';
+      lastError = e?.message || 'Backend server utilgængelig';
     }
   }
 
