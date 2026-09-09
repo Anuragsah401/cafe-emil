@@ -63,6 +63,7 @@ export default function Navbar({ restaurant }: NavbarProps) {
     { href: '/menu', label: 'Menukort' },
     { href: '/brunch', label: 'Brunch' },
     { href: '/selskaber', label: 'Selskaber' },
+    { href: '/galleri', label: 'Galleri' },
     { href: '/om-os', label: 'Om os' },
     { href: '/kontakt', label: 'Kontakt' },
   ];
@@ -124,12 +125,12 @@ export default function Navbar({ restaurant }: NavbarProps) {
           STICKY TOP FLOATING CAPSULE NAVBAR
           ======================================================== */}
       <header className="fixed top-3 sm:top-4 left-0 right-0 z-40 flex justify-center px-3 sm:px-6 pointer-events-none">
-        <div className="w-full max-w-5xl bg-[#120F10]/90 backdrop-blur-2xl border border-white/10 rounded-full px-3.5 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between shadow-2xl shadow-black/60 pointer-events-auto transition-all">
+        <div className="w-full max-w-5xl bg-[#141011]/95 backdrop-blur-2xl border border-white/15 rounded-full px-4 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between shadow-2xl shadow-black/80 pointer-events-auto transition-all">
           
           {/* Brand Logo */}
           <Link
             href="/"
-            className="flex items-center group py-0.5 shrink-0"
+            className="flex items-center group py-0.5 shrink-0 pr-2 lg:pr-3"
             aria-label="Café Emil Forside"
           >
             <img
@@ -140,17 +141,17 @@ export default function Navbar({ restaurant }: NavbarProps) {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 text-xs font-medium tracking-wide">
+          <nav className="hidden md:flex items-center gap-1 lg:gap-1.5 text-[13px] lg:text-sm font-semibold tracking-normal">
             {desktopNavLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3.5 py-1.5 rounded-full transition-all duration-150 ${
+                  className={`px-3.5 lg:px-4 py-2 rounded-full transition-all duration-200 ${
                     isActive
-                      ? 'bg-white/15 text-white font-bold shadow-sm'
-                      : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                      ? 'bg-emil-red text-white font-bold shadow-md shadow-red-600/30'
+                      : 'text-zinc-100 hover:text-white hover:bg-white/12 active:scale-95'
                   }`}
                 >
                   {link.label}
@@ -164,7 +165,7 @@ export default function Navbar({ restaurant }: NavbarProps) {
             {/* Book bord CTA Button (Desktop only - mobile uses drawer & bottom floating bar) */}
             <button
               onClick={() => setIsBookingOpen(true)}
-              className="hidden md:flex px-4 sm:px-5 py-2 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-bold text-xs uppercase tracking-wider active:scale-95 transition-all shadow-md shadow-red-600/30 items-center gap-1.5"
+              className="hidden md:flex px-4 sm:px-5 py-2 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider active:scale-95 transition-all shadow-md shadow-red-600/30 items-center gap-1.5 cursor-pointer"
             >
               <Calendar className="w-3.5 h-3.5" />
               <span>Book bord</span>

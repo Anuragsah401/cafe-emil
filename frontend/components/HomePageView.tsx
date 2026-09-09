@@ -370,8 +370,9 @@ export default function HomePageView({ cms }: HomePageViewProps) {
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => setIsBookingOpen(true)}
-                    className="px-4 py-2 rounded-full bg-white/10 hover:bg-emil-red hover:text-white text-white font-bold text-xs transition-colors flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-full bg-white/10 hover:bg-emil-red hover:text-white text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95"
                   >
                     <span>Book bord</span>
                     <Plus className="w-3.5 h-3.5" />
@@ -807,11 +808,11 @@ export default function HomePageView({ cms }: HomePageViewProps) {
             </button>
 
             <a
-              href={`tel:${restaurant.phone.replace(/\s+/g, '')}`}
+              href={`tel:${(restaurant?.phone || '36447456').replace(/\s+/g, '')}`}
               className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/20 font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2"
             >
               <Phone className="w-4 h-4 text-zinc-300" />
-              <span>Ring: {restaurant.phone}</span>
+              <span>Ring: {restaurant?.phone || '36 44 74 56'}</span>
             </a>
           </div>
         </div>
@@ -822,7 +823,7 @@ export default function HomePageView({ cms }: HomePageViewProps) {
         isOpen={isBookingOpen}
         onClose={() => setIsBookingOpen(false)}
         restaurant={restaurant}
-        bookingNotice={openingHours.weekendBookingNotice}
+        bookingNotice={openingHours?.weekendBookingNotice}
       />
     </div>
   );
