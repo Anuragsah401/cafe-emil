@@ -11,8 +11,8 @@ export async function getServerCmsData(): Promise<CmsData> {
   for (const url of urls) {
     try {
       const res = await fetch(`${url}/api/cms`, {
-        cache: 'no-store',
-        signal: AbortSignal.timeout(12000),
+        next: { revalidate: 60, tags: ['cms-data'] },
+        signal: AbortSignal.timeout(6000),
       });
 
       if (res.ok) {

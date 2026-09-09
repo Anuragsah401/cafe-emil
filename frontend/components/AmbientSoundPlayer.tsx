@@ -263,7 +263,7 @@ export default function AmbientSoundPlayer() {
         autoPlay
         playsInline
         loop
-        preload="auto"
+        preload="metadata"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />

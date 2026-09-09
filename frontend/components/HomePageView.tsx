@@ -84,6 +84,8 @@ export default function HomePageView({ cms }: HomePageViewProps) {
           <img
             src={sections.hero.videoBackground?.posterImage || "https://cafeemil.dk/wp-content/uploads/2024/12/forside-cafeemil.jpg"}
             alt="Café Emil atmosfære og mad"
+            fetchPriority="high"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover opacity-60 transition-opacity duration-700"
           />
 
@@ -335,6 +337,8 @@ export default function HomePageView({ cms }: HomePageViewProps) {
                     <img
                       src={dish.image || 'https://cafeemil.dk/wp-content/uploads/2024/12/332323.jpg'}
                       alt={dish.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-amber-400 flex items-center gap-1 border border-white/10">
@@ -458,11 +462,15 @@ export default function HomePageView({ cms }: HomePageViewProps) {
               <img
                 src="https://cafeemil.dk/wp-content/uploads/2024/12/332323.jpg"
                 alt="Café Emil interiør"
+                loading="lazy"
+                decoding="async"
                 className="fade-up delay-1 w-full h-56 object-cover rounded-3xl border border-white/10"
               />
               <img
                 src="https://cafeemil.dk/wp-content/uploads/2024/12/cafe-emil-pizza-1024x1024.jpg"
                 alt="Café Emil pizza"
+                loading="lazy"
+                decoding="async"
                 className="fade-up delay-2 w-full h-72 object-cover rounded-3xl border border-white/10"
               />
             </div>
@@ -470,11 +478,15 @@ export default function HomePageView({ cms }: HomePageViewProps) {
               <img
                 src="https://cafeemil.dk/wp-content/uploads/2024/12/selskaber-cafeemil.jpg"
                 alt="Café Emil terrasse"
+                loading="lazy"
+                decoding="async"
                 className="fade-up delay-3 w-full h-72 object-cover rounded-3xl border border-white/10"
               />
               <img
                 src="https://cafeemil.dk/wp-content/uploads/2024/12/kaffe-1024x768.jpg"
                 alt="Café Emil kaffe"
+                loading="lazy"
+                decoding="async"
                 className="fade-up delay-4 w-full h-56 object-cover rounded-3xl border border-white/10"
               />
             </div>
@@ -522,6 +534,8 @@ export default function HomePageView({ cms }: HomePageViewProps) {
               <img
                 src="https://cafeemil.dk/wp-content/uploads/2024/12/332323.jpg"
                 alt="Brunch på Café Emil"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-72 object-cover rounded-3xl border-2 border-white/10 shadow-2xl"
               />
             </div>
@@ -563,6 +577,8 @@ export default function HomePageView({ cms }: HomePageViewProps) {
               <img
                 src="https://cafeemil.dk/wp-content/uploads/2024/12/emil.jpg"
                 alt="Indendørs selskab Café Emil"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-48 object-cover rounded-2xl border border-white/10"
               />
             </div>
@@ -583,6 +599,8 @@ export default function HomePageView({ cms }: HomePageViewProps) {
               <img
                 src="https://cafeemil.dk/wp-content/uploads/2024/12/selskaber-cafeemil.jpg"
                 alt="Terrasse selskab Café Emil"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-48 object-cover rounded-2xl border border-white/10"
               />
             </div>

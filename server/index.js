@@ -1,4 +1,5 @@
 const express = require("express");
+const compression = require("compression");
 const cors = require("cors");
 const multer = require("multer");
 const jwt = require("jsonwebtoken");
@@ -18,6 +19,7 @@ const {
 } = require("./supabase");
 
 const app = express();
+app.use(compression());
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || "cafeemil_jwt_secret_token_valby_2025_secure_key";
 
@@ -226,6 +228,7 @@ app.put("/api/auth/change-password", authenticateToken, async (req, res) => {
 app.get("/api/cms", async (req, res) => {
   try {
     const data = await getCmsData();
+    res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     res.json(data);
   } catch (error) {
     console.error("Fetch CMS error:", error);

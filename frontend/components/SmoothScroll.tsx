@@ -55,9 +55,13 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProps) {
     const timer1 = setTimeout(checkAndObserve, 150);
     const timer2 = setTimeout(checkAndObserve, 600);
 
-    // Watch for DOM mutations (e.g. dynamic state updates or newly rendered elements)
+    // Watch for DOM mutations (debounced to avoid layout thrashing)
+    let mutationTimer: ReturnType<typeof setTimeout> | null = null;
     const mutationObserver = new MutationObserver(() => {
-      checkAndObserve();
+      if (mutationTimer) clearTimeout(mutationTimer);
+      mutationTimer = setTimeout(() => {
+        requestAnimationFrame(checkAndObserve);
+      }, 120);
     });
 
     mutationObserver.observe(document.body, {
@@ -70,6 +74,7 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProps) {
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
+      if (mutationTimer) clearTimeout(mutationTimer);
       revealObserver.disconnect();
       mutationObserver.disconnect();
     };
