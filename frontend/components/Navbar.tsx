@@ -224,11 +224,21 @@ export default function Navbar({ restaurant }: NavbarProps) {
               <span className="text-xs font-semibold text-zinc-300">
                 Café Emil • Valby
               </span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                <Clock className="w-3 h-3" />
+                <span>Åbent</span>
+              </span>
             </div>
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              <Clock className="w-3 h-3" />
-              <span>Åbent i dag</span>
-            </span>
+
+            {/* Explicit Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center text-zinc-300 hover:text-white transition-all active:scale-90 cursor-pointer"
+              aria-label="Luk menu"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Navigation Links (Scrollable if needed) */}
