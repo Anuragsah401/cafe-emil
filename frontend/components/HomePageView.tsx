@@ -34,7 +34,6 @@ export default function HomePageView({ cms }: HomePageViewProps) {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedCategoryTab, setSelectedCategoryTab] = useState('brunch');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [videoClarity, setVideoClarity] = useState<'vivid' | 'cinematic'>('vivid');
 
   const { restaurant, openingHours, sections, menuCategories, menuItems, gallery, faqs: cmsFaqs, testimonials: cmsTestimonials } = cms;
 
@@ -89,9 +88,7 @@ export default function HomePageView({ cms }: HomePageViewProps) {
           />
 
           {/* Scaled YouTube Background Video (Official Cafe Emil Footage) */}
-          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[67.5vw] min-h-[120%] min-w-[213vh] pointer-events-none transition-opacity duration-700 ${
-            videoClarity === 'vivid' ? 'opacity-90 sm:opacity-95' : 'opacity-75'
-          }`}>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[67.5vw] min-h-[120%] min-w-[213vh] pointer-events-none transition-opacity duration-700 opacity-90 sm:opacity-95">
             <iframe
               src={`https://www.youtube-nocookie.com/embed/${sections.hero.videoBackground?.youtubeId || 'MHUuvjLxTrg'}?autoplay=1&mute=1&controls=0&loop=1&playlist=${sections.hero.videoBackground?.youtubeId || 'MHUuvjLxTrg'}&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&disablekb=1&fs=0&start=${sections.hero.videoBackground?.startTime || 0}&end=${sections.hero.videoBackground?.endTime || 39}`}
               title="Café Emil Stemning & Mad"
@@ -108,11 +105,7 @@ export default function HomePageView({ cms }: HomePageViewProps) {
           <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-yumix-bg via-yumix-bg/75 to-transparent" />
 
           {/* Directional contrast scrim: dark behind text on left, open and clear on center/right */}
-          <div className={`absolute inset-0 transition-opacity duration-500 ${
-            videoClarity === 'vivid'
-              ? 'bg-gradient-to-r from-[#100D0E]/80 via-[#100D0E]/40 to-transparent sm:to-black/20'
-              : 'bg-gradient-to-r from-[#100D0E]/90 via-[#100D0E]/60 to-[#100D0E]/40'
-          }`} />
+          <div className="absolute inset-0 transition-opacity duration-500 bg-gradient-to-r from-[#100D0E]/80 via-[#100D0E]/40 to-transparent sm:to-black/20" />
         </div>
 
         {/* Subtle Ambient Glow */}
@@ -127,15 +120,6 @@ export default function HomePageView({ cms }: HomePageViewProps) {
                 <Flame className="w-3.5 h-3.5 text-amber-400" />
                 <span>Valby’s Hyggeligste Café &amp; Spisested</span>
               </div>
-              <button
-                type="button"
-                onClick={() => setVideoClarity(c => c === 'vivid' ? 'cinematic' : 'vivid')}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-md border border-white/20 text-xs text-white font-medium transition-all shadow-lg hover:border-amber-400/50 cursor-pointer pointer-events-auto"
-                title="Skift videoklarhed"
-              >
-                <span className={`w-2 h-2 rounded-full ${videoClarity === 'vivid' ? 'bg-green-400 animate-ping' : 'bg-amber-400'}`} />
-                <span>Video: {videoClarity === 'vivid' ? 'Maksimal Klarhed (95%)' : 'Dæmpet (75%)'}</span>
-              </button>
             </div>
 
             {/* Main Headline */}
