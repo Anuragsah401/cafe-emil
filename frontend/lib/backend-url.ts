@@ -20,3 +20,4 @@ export function getBackendUrl(): string {
   // 4. Default for local development
   return 'http://localhost:5001';
 }
+

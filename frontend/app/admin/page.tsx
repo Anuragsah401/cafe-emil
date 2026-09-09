@@ -12,11 +12,8 @@ import {
   CheckCircle,
   Plus,
   Trash2,
-  Calendar,
   ExternalLink,
-  Shield,
   Layers,
-  FileText,
   LogOut,
   Sparkles,
   Star,
@@ -28,14 +25,23 @@ import {
   Check,
   AlertCircle,
   ChevronRight,
-  Info,
   UploadCloud,
   FolderOpen,
   Loader2,
-  X
+  X,
+  Eye,
+  EyeOff,
+  Filter,
+  CheckCircle2,
+  Globe,
+  MapPin,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import ImageUploader from '@/components/admin/ImageUploader';
 import MediaLibrary from '@/components/admin/MediaLibrary';
+import AdminStats from '@/components/admin/AdminStats';
+import AdminStickyBar from '@/components/admin/AdminStickyBar';
 import {
   CmsData,
   MenuItem,
@@ -64,6 +70,8 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('general');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Menu management state
@@ -72,58 +80,20 @@ export default function AdminDashboardPage() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [isNewItemModal, setIsNewItemModal] = useState(false);
 
+  // Gallery filter state
+  const [galleryCategoryFilter, setGalleryCategoryFilter] = useState('alle');
+
   // Password change state
   const [pwdCurrent, setPwdCurrent] = useState('');
   const [pwdNew, setPwdNew] = useState('');
   const [pwdConfirm, setPwdConfirm] = useState('');
+  const [showPasswords, setShowPasswords] = useState(false);
   const [pwdStatus, setPwdStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [pwdLoading, setPwdLoading] = useState(false);
 
   // Gallery bulk upload state
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
   const [isGalleryUploading, setIsGalleryUploading] = useState(false);
-
-  const handleGalleryUpload = async (fileList: FileList | null) => {
-    if (!fileList || fileList.length === 0 || !data) return;
-    setIsGalleryUploading(true);
-    const newItems: GalleryItem[] = [];
-
-    for (const file of Array.from(fileList)) {
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        const json = await res.json();
-        if (res.ok && json.url) {
-          const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-          newItems.push({
-            id: `g-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            title: cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1),
-            category: 'food',
-            src: json.url,
-          });
-        }
-      } catch (err) {
-        console.error('Failed to upload gallery file:', err);
-      }
-    }
-
-    if (newItems.length > 0) {
-      setData({
-        ...data,
-        gallery: [...newItems, ...data.gallery],
-      });
-      setSaveMessage({ type: 'success', text: `${newItems.length} nye galleribilleder uploadet! Husk at klikke 'Gem Alle Ændringer'.` });
-      setTimeout(() => setSaveMessage(null), 5000);
-    }
-    setIsGalleryUploading(false);
-    if (galleryFileInputRef.current) {
-      galleryFileInputRef.current.value = '';
-    }
-  };
 
   // Backend & Supabase status
   const [storageStatus, setStorageStatus] = useState<{
@@ -157,6 +127,18 @@ export default function AdminDashboardPage() {
       .catch(() => {});
   }, [router]);
 
+  // 2. Global Keyboard Shortcut for Saving (Cmd+S / Ctrl+S)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [data]);
+
   // Handle Logout
   const handleLogout = async () => {
     try {
@@ -166,6 +148,13 @@ export default function AdminDashboardPage() {
     } catch {
       router.push('/admin/login');
     }
+  };
+
+  // Helper to update CMS state and mark unsaved changes
+  const updateData = (updater: (prev: CmsData) => CmsData) => {
+    if (!data) return;
+    setData(updater(data));
+    setHasUnsavedChanges(true);
   };
 
   // Handle Save
@@ -189,12 +178,57 @@ export default function AdminDashboardPage() {
         throw new Error(errJson.error || 'Kunne ikke gemme ændringer');
       }
 
-      setSaveMessage({ type: 'success', text: 'Alle ændringer er gemt med succes og er live på hjemmesiden!' });
+      setHasUnsavedChanges(false);
+      setLastSaved(new Date());
+      setSaveMessage({ type: 'success', text: 'Alle ændringer er gemt med succes og er live på websitet!' });
     } catch (error: any) {
       setSaveMessage({ type: 'error', text: error?.message || 'Kunne ikke gemme ændringer. Kontroller forbindelsen og prøv igen.' });
     } finally {
       setSaving(false);
       setTimeout(() => setSaveMessage(null), 5000);
+    }
+  };
+
+  // Handle Gallery Upload
+  const handleGalleryUpload = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0 || !data) return;
+    setIsGalleryUploading(true);
+    const newItems: GalleryItem[] = [];
+
+    for (const file of Array.from(fileList)) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const json = await res.json();
+        if (res.ok && json.url) {
+          const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+          newItems.push({
+            id: `g-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            title: cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1),
+            category: 'food',
+            src: json.url,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to upload gallery file:', err);
+      }
+    }
+
+    if (newItems.length > 0) {
+      updateData((prev) => ({
+        ...prev,
+        gallery: [...newItems, ...prev.gallery],
+      }));
+      setSaveMessage({ type: 'success', text: `${newItems.length} nye galleribilleder uploadet!` });
+      setTimeout(() => setSaveMessage(null), 5000);
+    }
+    setIsGalleryUploading(false);
+    if (galleryFileInputRef.current) {
+      galleryFileInputRef.current.value = '';
     }
   };
 
@@ -226,7 +260,7 @@ export default function AdminDashboardPage() {
         throw new Error(resData.error || 'Fejl ved skift af adgangskode');
       }
 
-      setPwdStatus({ type: 'success', text: 'Adgangskoden er nu ændret med succes!' });
+      setPwdStatus({ type: 'success', text: 'Adgangskoden er nu opdateret!' });
       setPwdCurrent('');
       setPwdNew('');
       setPwdConfirm('');
@@ -250,7 +284,7 @@ export default function AdminDashboardPage() {
       updatedItems = [item, ...data.menuItems];
     }
 
-    setData({ ...data, menuItems: updatedItems });
+    updateData((prev) => ({ ...prev, menuItems: updatedItems }));
     setEditingItem(null);
     setIsNewItemModal(false);
   };
@@ -259,19 +293,32 @@ export default function AdminDashboardPage() {
     if (!data) return;
     if (confirm('Er du sikker på, at du vil slette denne ret fra menukortet?')) {
       const updated = data.menuItems.filter((m) => m.id !== id);
-      setData({ ...data, menuItems: updated });
+      updateData((prev) => ({ ...prev, menuItems: updated }));
     }
   };
+
+  // Tabs definitions
+  const tabs = [
+    { id: 'general', label: 'Stamdata', icon: Settings, count: null },
+    { id: 'hours', label: 'Åbningstider', icon: Clock, count: null },
+    { id: 'menu', label: 'Menukort', icon: Utensils, count: data?.menuItems?.length || 0 },
+    { id: 'sections', label: 'Sektioner', icon: Layers, count: null },
+    { id: 'testimonials', label: 'Anmeldelser', icon: Star, count: data?.testimonials?.length || 0 },
+    { id: 'faqs', label: 'FAQ', icon: HelpCircle, count: data?.faqs?.length || 0 },
+    { id: 'gallery', label: 'Galleri', icon: ImageIcon, count: data?.gallery?.length || 0 },
+    { id: 'media', label: 'Mediearkiv', icon: FolderOpen, count: null },
+    { id: 'seo', label: 'SEO', icon: Globe, count: Object.keys(data?.seo || {}).length },
+    { id: 'security', label: 'Sikkerhed', icon: Key, count: null },
+  ];
 
   // Loading Screen
   if (loading || !data) {
     return (
-      <div className="min-h-screen bg-[#100D0E] text-white flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-10 h-10 border-2 border-emil-red border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs font-bold uppercase tracking-widest text-amber-300">
-            Indlæser Café Emil Kontrolpanel...
-          </p>
+      <div className="min-h-screen bg-[#0D0B0C] text-white flex items-center justify-center p-4">
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="w-12 h-12 border-3 border-emil-red border-t-transparent rounded-full animate-spin mx-auto drop-shadow-[0_0_15px_rgba(215,42,22,0.5)]" />
+          <h2 className="text-base font-extrabold tracking-wide text-white">Café Emil Kontrolpanel</h2>
+          <p className="text-xs text-zinc-400">Indlæser restaurantens data og cloud-forbindelse...</p>
         </div>
       </div>
     );
@@ -283,258 +330,227 @@ export default function AdminDashboardPage() {
       selectedCategoryFilter === 'alle' || item.categoryId === selectedCategoryFilter;
     const matchesSearch =
       item.name.toLowerCase().includes(menuSearch.toLowerCase()) ||
-      item.description.toLowerCase().includes(menuSearch.toLowerCase());
+      item.description.toLowerCase().includes(menuSearch.toLowerCase()) ||
+      (item.tags && item.tags.some((t) => t.toLowerCase().includes(menuSearch.toLowerCase())));
     return matchesCategory && matchesSearch;
   });
 
-  return (
-    <div className="min-h-screen bg-[#100D0E] text-zinc-100 pt-8 sm:pt-10 pb-20 selection:bg-emil-red selection:text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+  // Filtered gallery items
+  const filteredGalleryItems = data.gallery.filter((item) => {
+    if (galleryCategoryFilter === 'alle') return true;
+    return item.category === galleryCategoryFilter;
+  });
 
-        {/* ========================================================
-            TOP HEADER BAR
-            ======================================================== */}
-        <header className="bg-[#181415]/90 backdrop-blur-2xl border border-white/15 rounded-3xl p-6 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Link href="/" title="Gå til forsiden" className="shrink-0">
+  return (
+    <div className="min-h-screen bg-[#0D0B0C] text-zinc-100 selection:bg-emil-red selection:text-white pb-32">
+      
+      {/* ========================================================
+          STICKY TOP HEADER
+          ======================================================== */}
+      <header className="sticky top-0 z-30 bg-[#120F10]/90 backdrop-blur-2xl border-b border-white/10 px-4 sm:px-6 lg:px-8 py-3.5 shadow-xl transition-all">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          
+          {/* Brand & Title */}
+          <div className="flex items-center gap-3 min-w-0">
+            <Link href="/" title="Gå til forsiden" className="shrink-0 group">
               <img
                 src="/images/cafeemil-logo.png"
                 alt="Café Emil"
-                className="h-12 w-auto drop-shadow-[0_2px_8px_rgba(215,42,22,0.4)]"
+                className="h-9 sm:h-10 w-auto drop-shadow-[0_2px_10px_rgba(215,42,22,0.4)] group-hover:scale-105 transition-transform"
               />
             </Link>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] font-bold uppercase tracking-widest text-amber-300">
-                  Administrator Dashboard
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest text-amber-400 truncate">
+                  CMS Kontrolpanel
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0 ${
+                    storageStatus?.supabaseConnected
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                      : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  }`}
+                >
+                  {storageStatus?.supabaseConnected ? 'Cloud Forbundet' : 'Lokal Mode'}
                 </span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-white mt-0.5">
-                Café Emil CMS &amp; Indholdskontrol
+              <h1 className="text-sm sm:text-base font-black text-white truncate hidden xs:block">
+                Café Emil Administration
               </h1>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center flex-wrap gap-2.5">
+          {/* Action Header Buttons */}
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/"
               target="_blank"
-              className="px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white flex items-center gap-2 transition-all"
+              className="px-3 sm:px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all"
+              title="Åbn websitet i ny fane"
             >
-              <span>Se Website</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Se Site</span>
+              <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
             </Link>
 
             <button
+              type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover active:scale-95 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl shadow-red-600/30 disabled:opacity-50"
+              className="px-4 sm:px-5 py-2 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-red-600/30 active:scale-95 disabled:opacity-50"
             >
-              <Save className="w-4 h-4" />
-              <span>{saving ? 'Gemmer...' : 'Gem Alle Ændringer'}</span>
+              {saving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Save className="w-3.5 h-3.5" />
+              )}
+              <span className="hidden sm:inline">{saving ? 'Gemmer...' : 'Gem Ændringer'}</span>
+              <span className="sm:hidden">{saving ? '...' : 'Gem'}</span>
             </button>
 
             <button
+              type="button"
               onClick={handleLogout}
-              className="px-4 py-2.5 rounded-full bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border border-white/10 text-xs font-semibold flex items-center gap-2 transition-all"
-              title="Log ud"
+              className="p-2 sm:px-3 sm:py-2 rounded-full bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border border-white/10 text-xs font-semibold flex items-center gap-1.5 transition-all"
+              title="Log ud som administrator"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Log ud</span>
+              <span className="hidden md:inline">Log ud</span>
             </button>
           </div>
-        </header>
+        </div>
+      </header>
+
+      {/* ========================================================
+          MAIN CONTENT CONTAINER
+          ======================================================== */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
 
         {/* Global Save Feedback Toast */}
         {saveMessage && (
           <div
-            className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-3 animate-page-enter shadow-2xl ${
+            className={`p-4 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-between gap-3 animate-page-enter shadow-2xl border ${
               saveMessage.type === 'success'
-                ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-                : 'bg-red-500/15 border border-red-500/30 text-red-300'
+                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200'
+                : 'bg-red-500/15 border-red-500/40 text-red-200'
             }`}
           >
-            {saveMessage.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-            )}
-            <span>{saveMessage.text}</span>
+            <div className="flex items-center gap-2.5">
+              {saveMessage.type === 'success' ? (
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+              )}
+              <span>{saveMessage.text}</span>
+            </div>
+            <button
+              onClick={() => setSaveMessage(null)}
+              className="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-white/10"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
 
-        {/* Backend & Supabase Notice Banner */}
-        {storageStatus && (
-          <div
-            className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-page-enter ${
-              storageStatus.supabaseConnected
-                ? 'bg-emerald-500/10 border-emerald-500/30'
-                : 'bg-amber-500/10 border-amber-500/30'
-            }`}
-          >
-            <div className="flex items-start sm:items-center gap-3">
-              <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0 ${
-                  storageStatus.supabaseConnected
-                    ? 'bg-emerald-500/20 text-emerald-400'
-                    : 'bg-amber-500/20 text-amber-400'
-                }`}
-              >
+        {/* Live Overview Stats */}
+        <AdminStats
+          data={data}
+          storageStatus={storageStatus}
+          onSelectTab={(tab) => setActiveTab(tab)}
+        />
+
+        {/* Backend / Supabase Banner if disconnected */}
+        {storageStatus && !storageStatus.supabaseConnected && (
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-white">
-                    Node.js &amp; Supabase Backend Status
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                      storageStatus.supabaseConnected
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                        : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                    }`}
-                  >
-                    {storageStatus.supabaseConnected
-                      ? '✓ Supabase Cloud Forbundet'
-                      : 'Server Kører (Supabase Nøgler Mangler)'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-zinc-300 mt-0.5">
-                  {storageStatus.supabaseConnected
-                    ? 'Backend kører på Node.js og gemmer alt indhold og uploadede fotos direkte i din Supabase database og storage bucket.'
-                    : 'Express backend kører på port 5001 med lokal fallback. Tilføj din SUPABASE_URL og nøgle i server/.env for at aktivere cloud-database.'}
+                <p className="text-xs font-bold text-white">Lokal Fallback Mode</p>
+                <p className="text-[11px] text-zinc-400">
+                  Backend gemmer lokalt. Tilføj din SUPABASE_URL og nøgler i server/.env for cloud-database.
                 </p>
               </div>
             </div>
-
-            {!storageStatus.supabaseConnected && (
-              <button
-                type="button"
-                onClick={() => setShowStorageGuide(true)}
-                className="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-lg shadow-amber-400/20 shrink-0"
-              >
-                <span>Supabase Setup (2 min)</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Supabase Guide Modal */}
-        {showStorageGuide && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="bg-[#181415] border border-white/20 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl space-y-6 animate-page-enter">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-400" />
-                  <h3 className="text-lg font-bold text-white">
-                    Sådan forbinder du Supabase til din Backend
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowStorageGuide(false)}
-                  className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="space-y-4 text-xs text-zinc-300">
-                <p className="text-zinc-300">
-                  Backend-serveren i mappen <code className="bg-white/10 px-1.5 py-0.5 rounded text-white font-mono">server/</code> er bygget med Node.js og Express. Følg disse hurtige trin for at forbinde dit gratis Supabase-projekt:
-                </p>
-
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                  <div className="font-bold text-white flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px]">1</span>
-                    <span>Hent API-nøgler fra Supabase</span>
-                  </div>
-                  <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed">
-                    Gå til dit projekt på <a href="https://supabase.com" target="_blank" rel="noreferrer" className="text-amber-400 underline font-semibold">supabase.com</a> &rarr; <strong>Project Settings</strong> &rarr; <strong>API</strong> &rarr; Kopier <strong>Project URL</strong> og <strong>service_role</strong> nøglen (eller anon nøglen).
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                  <div className="font-bold text-white flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px]">2</span>
-                    <span>Indsæt i server/.env</span>
-                  </div>
-                  <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed font-mono">
-                    SUPABASE_URL=https://dit-projekt.supabase.co<br />
-                    SUPABASE_SERVICE_ROLE_KEY=din-supabase-key
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                  <div className="font-bold text-white flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-emerald-400 text-black font-bold flex items-center justify-center text-[10px]">3</span>
-                    <span>Kør SQL Skemaet</span>
-                  </div>
-                  <p className="text-[11px] text-zinc-400 pl-7 leading-relaxed">
-                    Åbn <strong>SQL Editor</strong> i Supabase, kopier indholdet fra filen <code className="bg-white/10 px-1 rounded text-white">server/schema.sql</code>, og klik <strong>Run</strong>. Det opretter tabellerne for CMS, administratorer og billed-bucket automatisk.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowStorageGuide(false)}
-                  className="px-6 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-bold text-xs uppercase tracking-wider transition-colors"
-                >
-                  Forstået
-                </button>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowStorageGuide(true)}
+              className="px-3.5 py-1.5 rounded-full bg-amber-400 text-black font-extrabold text-[11px] uppercase tracking-wider hover:bg-amber-300 transition-colors shrink-0"
+            >
+              Guide (2 min)
+            </button>
           </div>
         )}
 
         {/* ========================================================
-            TAB NAVIGATION BAR (9 Modules)
+            RESPONSIVE TAB SWITCHER
             ======================================================== */}
-        <nav className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {[
-            { id: 'general', label: 'Stamdata', icon: Settings },
-            { id: 'hours', label: 'Åbningstider', icon: Clock },
-            { id: 'menu', label: 'Menukort & Retter', icon: Utensils },
-            { id: 'sections', label: 'Sektioner & Tekster', icon: Layers },
-            { id: 'testimonials', label: 'Anmeldelser', icon: Star },
-            { id: 'faqs', label: 'FAQ', icon: HelpCircle },
-            { id: 'gallery', label: 'Galleri', icon: ImageIcon },
-            { id: 'media', label: 'Mediearkiv', icon: FolderOpen },
-            { id: 'seo', label: 'SEO & Metadata', icon: Search },
-            { id: 'security', label: 'Sikkerhed & Kode', icon: Key },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as AdminTab)}
-                className={`px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'bg-emil-red text-white shadow-lg shadow-red-600/30'
-                    : 'bg-[#181415] text-zinc-400 hover:text-white border border-white/10 hover:border-white/20'
-                }`}
+        <div className="space-y-3">
+          {/* Mobile Select Dropdown (< sm) */}
+          <div className="sm:hidden">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+              Vælg Sektion
+            </label>
+            <div className="relative">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as AdminTab)}
+                className="w-full px-4 py-3 rounded-2xl bg-[#181415] border border-white/15 text-sm text-white font-bold appearance-none focus:outline-none focus:border-emil-red pr-10"
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+                {tabs.map((tab) => (
+                  <option key={tab.id} value={tab.id}>
+                    {tab.label} {tab.count !== null ? `(${tab.count})` : ''}
+                  </option>
+                ))}
+              </select>
+              <ChevronRight className="w-4 h-4 text-zinc-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" />
+            </div>
+          </div>
+
+          {/* Desktop & Tablet Pills (sm+) */}
+          <nav
+            aria-label="CMS sektioner"
+            className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none border-b border-white/10"
+          >
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as AdminTab)}
+                  className={`px-3.5 sm:px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 whitespace-nowrap transition-all duration-200 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-red-600 to-emil-red text-white shadow-lg shadow-red-600/30 scale-100'
+                      : 'bg-[#181415] text-zinc-400 hover:text-white border border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  <span>{tab.label}</span>
+                  {tab.count !== null && (
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                        isActive ? 'bg-black/30 text-white' : 'bg-white/10 text-zinc-300'
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
         {/* ========================================================
             TAB 1: STAMDATA & KONTAKT
             ======================================================== */}
         {activeTab === 'general' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-8 animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-8 animate-page-enter">
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Settings className="w-5 h-5 text-amber-400" />
+              <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-amber-400 shrink-0" />
                 <span>Restaurantens Stamoplysninger &amp; Links</span>
               </h2>
               <p className="text-xs text-zinc-400 mt-1">
@@ -542,7 +558,7 @@ export default function AdminDashboardPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">
                   Restaurant Navn
@@ -551,12 +567,12 @@ export default function AdminDashboardPage() {
                   type="text"
                   value={data.restaurant.name}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      restaurant: { ...data.restaurant, name: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      restaurant: { ...prev.restaurant, name: e.target.value },
+                    }))
                   }
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red transition-colors"
                 />
               </div>
 
@@ -568,80 +584,84 @@ export default function AdminDashboardPage() {
                   type="text"
                   value={data.restaurant.tagline}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      restaurant: { ...data.restaurant, tagline: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      restaurant: { ...prev.restaurant, tagline: e.target.value },
+                    }))
                   }
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">
-                  Telefon (Dansk format)
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Telefon (Dansk format)</span>
                 </label>
                 <input
                   type="text"
                   value={data.restaurant.phone}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      restaurant: { ...data.restaurant, phone: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      restaurant: { ...prev.restaurant, phone: e.target.value },
+                    }))
                   }
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">
-                  Telefon (Internationalt format)
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Telefon (Internationalt format)</span>
                 </label>
                 <input
                   type="text"
                   value={data.restaurant.phoneInternational}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      restaurant: { ...data.restaurant, phoneInternational: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      restaurant: { ...prev.restaurant, phoneInternational: e.target.value },
+                    }))
                   }
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">
-                  E-mail
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>E-mail</span>
                 </label>
                 <input
                   type="email"
                   value={data.restaurant.email}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      restaurant: { ...data.restaurant, email: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      restaurant: { ...prev.restaurant, email: e.target.value },
+                    }))
                   }
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">
-                  Adresse
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Adresse</span>
                 </label>
                 <input
                   type="text"
                   value={data.restaurant.streetAddress}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      restaurant: { ...data.restaurant, streetAddress: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      restaurant: { ...prev.restaurant, streetAddress: e.target.value },
+                    }))
                   }
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red transition-colors"
                 />
               </div>
 
@@ -654,10 +674,10 @@ export default function AdminDashboardPage() {
                     type="text"
                     value={data.restaurant.postalCode}
                     onChange={(e) =>
-                      setData({
-                        ...data,
-                        restaurant: { ...data.restaurant, postalCode: e.target.value },
-                      })
+                      updateData((prev) => ({
+                        ...prev,
+                        restaurant: { ...prev.restaurant, postalCode: e.target.value },
+                      }))
                     }
                     placeholder="2500"
                     className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
@@ -666,10 +686,10 @@ export default function AdminDashboardPage() {
                     type="text"
                     value={data.restaurant.city}
                     onChange={(e) =>
-                      setData({
-                        ...data,
-                        restaurant: { ...data.restaurant, city: e.target.value },
-                      })
+                      updateData((prev) => ({
+                        ...prev,
+                        restaurant: { ...prev.restaurant, city: e.target.value },
+                      }))
                     }
                     placeholder="Valby"
                     className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
@@ -683,29 +703,29 @@ export default function AdminDashboardPage() {
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[10px] text-zinc-400">Indendørs</span>
+                    <span className="text-[10px] text-zinc-400 font-semibold">Indendørs</span>
                     <input
                       type="number"
                       value={data.restaurant.indoorCapacity}
                       onChange={(e) =>
-                        setData({
-                          ...data,
-                          restaurant: { ...data.restaurant, indoorCapacity: parseInt(e.target.value) || 0 },
-                        })
+                        updateData((prev) => ({
+                          ...prev,
+                          restaurant: { ...prev.restaurant, indoorCapacity: parseInt(e.target.value) || 0 },
+                        }))
                       }
                       className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/15 text-sm text-white"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] text-zinc-400">Terrasse</span>
+                    <span className="text-[10px] text-zinc-400 font-semibold">Terrasse</span>
                     <input
                       type="number"
                       value={data.restaurant.outdoorCapacity}
                       onChange={(e) =>
-                        setData({
-                          ...data,
-                          restaurant: { ...data.restaurant, outdoorCapacity: parseInt(e.target.value) || 0 },
-                        })
+                        updateData((prev) => ({
+                          ...prev,
+                          restaurant: { ...prev.restaurant, outdoorCapacity: parseInt(e.target.value) || 0 },
+                        }))
                       }
                       className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/15 text-sm text-white"
                     />
@@ -721,10 +741,10 @@ export default function AdminDashboardPage() {
                   type="text"
                   value={data.restaurant.seatBookingUrl}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      restaurant: { ...data.restaurant, seatBookingUrl: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      restaurant: { ...prev.restaurant, seatBookingUrl: e.target.value },
+                    }))
                   }
                   className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red font-mono"
                 />
@@ -738,10 +758,10 @@ export default function AdminDashboardPage() {
                   type="text"
                   value={data.restaurant.smileyUrl}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      restaurant: { ...data.restaurant, smileyUrl: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      restaurant: { ...prev.restaurant, smileyUrl: e.target.value },
+                    }))
                   }
                   className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white font-mono"
                 />
@@ -755,10 +775,10 @@ export default function AdminDashboardPage() {
                   type="text"
                   value={data.restaurant.googleMapsUrl}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      restaurant: { ...data.restaurant, googleMapsUrl: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      restaurant: { ...prev.restaurant, googleMapsUrl: e.target.value },
+                    }))
                   }
                   className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white font-mono"
                 />
@@ -771,20 +791,23 @@ export default function AdminDashboardPage() {
             TAB 2: ÅBNINGSTIDER & KØKKEN
             ======================================================== */}
         {activeTab === 'hours' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-8 animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-8 animate-page-enter">
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Clock className="w-5 h-5 text-amber-400" />
+              <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                <Clock className="w-5 h-5 text-amber-400 shrink-0" />
                 <span>Åbningstider &amp; Køkkenlukketider</span>
               </h2>
               <p className="text-xs text-zinc-400 mt-1">
-                Juster tider for caféen og køkkenet. Opdateringerne vises direkte på forside, kontakt og i bunden.
+                Juster tider for caféen og køkkenet. Vises direkte på forsiden, kontakt og i sidefoden.
               </p>
             </div>
 
             <div className="space-y-4">
               {data.openingHours.schedule.map((slot, idx) => (
-                <div key={slot.id} className="p-5 rounded-2xl bg-white/5 border border-white/10 grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
+                <div
+                  key={slot.id}
+                  className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 items-center hover:border-white/20 transition-colors"
+                >
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-amber-300">Periode / Dage</label>
                     <input
@@ -793,9 +816,12 @@ export default function AdminDashboardPage() {
                       onChange={(e) => {
                         const updated = [...data.openingHours.schedule];
                         updated[idx].days = e.target.value;
-                        setData({ ...data, openingHours: { ...data.openingHours, schedule: updated } });
+                        updateData((prev) => ({
+                          ...prev,
+                          openingHours: { ...prev.openingHours, schedule: updated },
+                        }));
                       }}
-                      className="w-full mt-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
+                      className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                     />
                   </div>
                   <div>
@@ -806,9 +832,12 @@ export default function AdminDashboardPage() {
                       onChange={(e) => {
                         const updated = [...data.openingHours.schedule];
                         updated[idx].open = e.target.value;
-                        setData({ ...data, openingHours: { ...data.openingHours, schedule: updated } });
+                        updateData((prev) => ({
+                          ...prev,
+                          openingHours: { ...prev.openingHours, schedule: updated },
+                        }));
                       }}
-                      className="w-full mt-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
+                      className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                     />
                   </div>
                   <div>
@@ -819,9 +848,12 @@ export default function AdminDashboardPage() {
                       onChange={(e) => {
                         const updated = [...data.openingHours.schedule];
                         updated[idx].close = e.target.value;
-                        setData({ ...data, openingHours: { ...data.openingHours, schedule: updated } });
+                        updateData((prev) => ({
+                          ...prev,
+                          openingHours: { ...prev.openingHours, schedule: updated },
+                        }));
                       }}
-                      className="w-full mt-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
+                      className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                     />
                   </div>
                   <div>
@@ -832,16 +864,19 @@ export default function AdminDashboardPage() {
                       onChange={(e) => {
                         const updated = [...data.openingHours.schedule];
                         updated[idx].kitchenClose = e.target.value;
-                        setData({ ...data, openingHours: { ...data.openingHours, schedule: updated } });
+                        updateData((prev) => ({
+                          ...prev,
+                          openingHours: { ...prev.openingHours, schedule: updated },
+                        }));
                       }}
-                      className="w-full mt-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
+                      className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white font-bold"
                     />
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 pt-4 border-t border-white/10">
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">
                   Brunch Tidspunkter Tekst
@@ -850,10 +885,10 @@ export default function AdminDashboardPage() {
                   type="text"
                   value={data.openingHours.brunchHours}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      openingHours: { ...data.openingHours, brunchHours: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      openingHours: { ...prev.openingHours, brunchHours: e.target.value },
+                    }))
                   }
                   className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white"
                 />
@@ -867,10 +902,10 @@ export default function AdminDashboardPage() {
                   rows={3}
                   value={data.openingHours.weekendBookingNotice}
                   onChange={(e) =>
-                    setData({
-                      ...data,
-                      openingHours: { ...data.openingHours, weekendBookingNotice: e.target.value },
-                    })
+                    updateData((prev) => ({
+                      ...prev,
+                      openingHours: { ...prev.openingHours, weekendBookingNotice: e.target.value },
+                    }))
                   }
                   className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white"
                 />
@@ -880,22 +915,25 @@ export default function AdminDashboardPage() {
         )}
 
         {/* ========================================================
-            TAB 3: MENUKORT & RETTER (Full CRUD)
+            TAB 3: MENUKORT & RETTER (Full Responsive CRUD)
             ======================================================== */}
         {activeTab === 'menu' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
+            
+            {/* Header with Title & Add button */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Utensils className="w-5 h-5 text-amber-400" />
+                <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                  <Utensils className="w-5 h-5 text-amber-400 shrink-0" />
                   <span>Menukort &amp; Retter ({data.menuItems.length} i alt)</span>
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Opret, rediger priser, juster beskrivelser eller slet retter fra menukortet.
+                  Opret nye retter, opdater priser, tilføj fotos og juster beskrivelser.
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={() => {
                   setEditingItem({
                     id: `dish-${Date.now()}`,
@@ -909,133 +947,197 @@ export default function AdminDashboardPage() {
                   });
                   setIsNewItemModal(true);
                 }}
-                className="px-4 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-red-600/25 self-start sm:self-auto"
+                className="px-4 py-2.5 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-red-600/30 self-start sm:self-auto active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tilføj Ny Ret</span>
               </button>
             </div>
 
-            {/* Filter toolbar */}
-            <div className="flex flex-col md:flex-row items-center gap-3">
-              <div className="relative flex-1 w-full">
+            {/* Search & Category Filter Bar */}
+            <div className="space-y-3">
+              <div className="relative">
                 <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={menuSearch}
                   onChange={(e) => setMenuSearch(e.target.value)}
-                  placeholder="Søg i retter eller beskrivelse..."
-                  className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder:text-zinc-500"
+                  placeholder="Søg efter ret, ingredienser eller tags (f.eks. Burger, Kaffe, Vegetar)..."
+                  className="w-full pl-10 pr-10 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emil-red transition-colors"
                 />
+                {menuSearch && (
+                  <button
+                    onClick={() => setMenuSearch('')}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
-              <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
+              {/* Category Filter Pills with Item Counts */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
                 <button
+                  type="button"
                   onClick={() => setSelectedCategoryFilter('alle')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                     selectedCategoryFilter === 'alle'
-                      ? 'bg-white text-black'
+                      ? 'bg-white text-black shadow-md'
                       : 'bg-white/5 text-zinc-400 hover:text-white border border-white/10'
                   }`}
                 >
                   Alle ({data.menuItems.length})
                 </button>
-                {data.menuCategories.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedCategoryFilter(c.id)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                      selectedCategoryFilter === c.id
-                        ? 'bg-emil-red text-white'
-                        : 'bg-white/5 text-zinc-400 hover:text-white border border-white/10'
-                    }`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
+                {data.menuCategories.map((c) => {
+                  const categoryCount = data.menuItems.filter((m) => m.categoryId === c.id).length;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setSelectedCategoryFilter(c.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                        selectedCategoryFilter === c.id
+                          ? 'bg-emil-red text-white shadow-md shadow-red-600/30'
+                          : 'bg-white/5 text-zinc-400 hover:text-white border border-white/10'
+                      }`}
+                    >
+                      <span>{c.name}</span>
+                      <span className="text-[10px] opacity-70">({categoryCount})</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Items Table / List */}
-            <div className="space-y-2.5 max-h-[600px] overflow-y-auto pr-1">
-              {filteredMenuItems.map((dish) => (
-                <div
-                  key={dish.id}
-                  className="p-4 rounded-2xl bg-white/5 hover:bg-white/[0.08] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-white text-sm">{dish.name}</span>
-                      <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-                        {dish.price},- DKK
-                      </span>
-                      <span className="text-[10px] uppercase font-bold text-zinc-400 bg-white/5 px-2 py-0.5 rounded-md">
-                        {dish.categoryId}
-                      </span>
+            {/* Menu Items Responsive Grid / Cards */}
+            {filteredMenuItems.length === 0 ? (
+              <div className="text-center py-12 border border-dashed border-white/10 rounded-2xl p-6">
+                <Utensils className="w-8 h-8 text-zinc-500 mx-auto mb-2" />
+                <p className="text-sm font-bold text-white">Ingen retter fundet</p>
+                <p className="text-xs text-zinc-400 mt-1">Prøv at ændre din søgning eller nulstil kategorifiltret.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 max-h-[700px] overflow-y-auto pr-1">
+                {filteredMenuItems.map((dish) => (
+                  <div
+                    key={dish.id}
+                    className="p-4 rounded-2xl bg-white/5 hover:bg-white/[0.08] border border-white/10 flex items-start gap-3.5 transition-all duration-200 group"
+                  >
+                    {/* Food Photo / Placeholder */}
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-black/40 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center relative">
+                      {dish.image ? (
+                        <img
+                          src={dish.image}
+                          alt={dish.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <Utensils className="w-6 h-6 text-zinc-600" />
+                      )}
                     </div>
-                    <p className="text-xs text-zinc-400 mt-1 line-clamp-1">
-                      {dish.description}
-                    </p>
-                  </div>
 
-                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                    <button
-                      onClick={() => {
-                        setEditingItem({ ...dish });
-                        setIsNewItemModal(false);
-                      }}
-                      className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 text-xs flex items-center gap-1 transition-colors"
-                      title="Rediger ret"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span className="text-[11px] font-semibold">Rediger</span>
-                    </button>
-                    <button
-                      onClick={() => handleDeleteMenuItem(dish.id)}
-                      className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs transition-colors"
-                      title="Slet ret"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-extrabold text-white text-sm sm:text-base leading-snug truncate">
+                          {dish.name}
+                        </h4>
+                        <span className="text-xs font-mono font-black text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20 shrink-0">
+                          {dish.price},-
+                        </span>
+                      </div>
 
-            {/* Modal: Edit / Add Menu Item */}
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span className="text-[9px] uppercase font-bold text-zinc-400 bg-white/5 px-2 py-0.5 rounded-md">
+                          {data.menuCategories.find((c) => c.id === dish.categoryId)?.name || dish.categoryId}
+                        </span>
+                        {dish.tags &&
+                          dish.tags.map((tag, tIdx) => (
+                            <span
+                              key={tIdx}
+                              className="text-[9px] font-bold text-red-300 bg-red-500/10 border border-red-500/20 px-1.5 py-0.2 rounded-md"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                      </div>
+
+                      <p className="text-xs text-zinc-400 mt-1.5 line-clamp-2 leading-relaxed">
+                        {dish.description}
+                      </p>
+
+                      {/* Actions */}
+                      <div className="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-white/5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingItem({ ...dish });
+                            setIsNewItemModal(false);
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                        >
+                          <Edit2 className="w-3 h-3 text-amber-400" />
+                          <span>Rediger</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteMenuItem(dish.id)}
+                          className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs transition-colors"
+                          title="Slet ret"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ====================================================
+                RESPONSIVE MODAL: EDIT / ADD MENU ITEM
+                ==================================================== */}
             {editingItem && (
-              <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-[#181415] border border-white/20 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-4 shadow-2xl animate-page-enter">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <h3 className="text-base font-bold text-white">
-                      {isNewItemModal ? 'Tilføj Ny Ret' : `Rediger: ${editingItem.name}`}
-                    </h3>
+              <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-page-enter">
+                <div className="bg-[#181415] border border-white/20 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                  
+                  {/* Modal Sticky Header */}
+                  <div className="flex items-center justify-between border-b border-white/10 px-5 sm:px-6 py-4 shrink-0">
+                    <div className="flex items-center gap-2">
+                      <Utensils className="w-4 h-4 text-amber-400" />
+                      <h3 className="text-base font-black text-white">
+                        {isNewItemModal ? 'Tilføj Ny Ret' : `Rediger: ${editingItem.name || 'Ret'}`}
+                      </h3>
+                    </div>
                     <button
+                      type="button"
                       onClick={() => setEditingItem(null)}
-                      className="text-zinc-400 hover:text-white p-1"
+                      className="p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
                     >
-                      ✕
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-zinc-300 uppercase">Navn</label>
+                  {/* Modal Scrollable Body */}
+                  <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
+                    <div className="space-y-1">
+                      <label className="block text-[11px] font-bold text-zinc-300 uppercase">Navn på ret</label>
                       <input
                         type="text"
                         value={editingItem.name}
                         onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
-                        className="w-full mt-1 px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-sm text-white"
+                        placeholder="F.eks. Emil Gourmet Burger"
+                        className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div>
+                      <div className="space-y-1">
                         <label className="block text-[11px] font-bold text-zinc-300 uppercase">Kategori</label>
                         <select
                           value={editingItem.categoryId}
                           onChange={(e) => setEditingItem({ ...editingItem, categoryId: e.target.value })}
-                          className="w-full mt-1 px-3 py-2 rounded-xl bg-[#141011] border border-white/15 text-xs text-white"
+                          className="w-full px-3 py-2.5 rounded-xl bg-[#141011] border border-white/15 text-xs text-white"
                         >
                           {data.menuCategories.map((c) => (
                             <option key={c.id} value={c.id}>
@@ -1045,47 +1147,67 @@ export default function AdminDashboardPage() {
                         </select>
                       </div>
 
-                      <div>
+                      <div className="space-y-1">
                         <label className="block text-[11px] font-bold text-zinc-300 uppercase">Pris (DKK)</label>
                         <input
                           type="number"
                           value={editingItem.price}
                           onChange={(e) => setEditingItem({ ...editingItem, price: parseFloat(e.target.value) || 0 })}
-                          className="w-full mt-1 px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-sm text-white font-mono"
+                          className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white font-mono font-bold"
                         />
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-zinc-300 uppercase">Beskrivelse</label>
+                    <div className="space-y-1">
+                      <label className="block text-[11px] font-bold text-zinc-300 uppercase">Beskrivelse &amp; Ingredienser</label>
                       <textarea
                         rows={3}
                         value={editingItem.description}
                         onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
-                        className="w-full mt-1 px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white"
+                        placeholder="Kort, lækker beskrivelse af retten..."
+                        className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-xs text-white focus:outline-none focus:border-emil-red"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[11px] font-bold text-zinc-300 uppercase">Fremhævede Tags (komma-adskilt)</label>
+                      <input
+                        type="text"
+                        value={editingItem.tags ? editingItem.tags.join(', ') : ''}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem,
+                            tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean),
+                          })
+                        }
+                        placeholder="F.eks. Populær, Vegetar, Glutenfri"
+                        className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-xs text-white"
                       />
                     </div>
 
                     <div>
                       <ImageUploader
-                        label="Ret Billede"
+                        label="Ret Foto"
                         value={editingItem.image || ''}
                         onChange={(url) => setEditingItem({ ...editingItem, image: url })}
-                        description="Upload et appetitvækkende billede af retten direkte fra din computer eller telefon."
+                        description="Upload et appetitvækkende foto af retten direkte fra computer eller mobil."
                       />
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-3">
+                  {/* Modal Sticky Footer */}
+                  <div className="p-4 sm:p-5 border-t border-white/10 bg-black/40 shrink-0 flex items-center justify-end gap-3">
                     <button
+                      type="button"
                       onClick={() => setEditingItem(null)}
-                      className="px-4 py-2 rounded-full text-xs font-semibold text-zinc-400 hover:text-white"
+                      className="px-4 py-2 rounded-full text-xs font-bold text-zinc-400 hover:text-white"
                     >
                       Annuller
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleSaveMenuItem(editingItem)}
-                      className="px-5 py-2 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-bold text-xs uppercase tracking-wider transition-colors"
+                      className="px-6 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md shadow-red-600/30 active:scale-95"
                     >
                       Gem Ret
                     </button>
@@ -1100,40 +1222,40 @@ export default function AdminDashboardPage() {
             TAB 4: FORSIDE & SEKTIONER
             ======================================================== */}
         {activeTab === 'sections' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-10 animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-8 animate-page-enter">
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Layers className="w-5 h-5 text-amber-400" />
+              <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-amber-400 shrink-0" />
                 <span>Forside &amp; Sektionsindhold</span>
               </h2>
               <p className="text-xs text-zinc-400 mt-1">
-                Styr overskrifter, introtekster, videobaggrund og historier på tværs af hele hjemmesiden.
+                Styr overskrifter, introtekster, videobaggrund og historier på tværs af websitet.
               </p>
             </div>
 
             {/* 1. HERO SECTION */}
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
-              <h3 className="text-base font-bold text-white flex items-center gap-2 text-amber-300">
-                <Video className="w-4 h-4 text-amber-400" />
+            <div className="p-5 sm:p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 text-amber-300">
+                <Video className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>01 — Hero Sektion &amp; Videobaggrund</span>
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-300 uppercase">Top Badge</label>
+                  <label className="block text-[10px] font-bold text-zinc-300 uppercase">Top Badge (Eyebrow)</label>
                   <input
                     type="text"
                     value={data.sections.hero.eyebrow}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
-                          hero: { ...data.sections.hero, eyebrow: e.target.value },
+                          ...prev.sections,
+                          hero: { ...prev.sections.hero, eyebrow: e.target.value },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                   />
                 </div>
 
@@ -1143,79 +1265,79 @@ export default function AdminDashboardPage() {
                     type="text"
                     value={data.sections.hero.title}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
-                          hero: { ...data.sections.hero, title: e.target.value },
+                          ...prev.sections,
+                          hero: { ...prev.sections.hero, title: e.target.value },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-[10px] font-bold text-zinc-300 uppercase">Undertekst / Beskrivelse</label>
+                  <label className="block text-[10px] font-bold text-zinc-300 uppercase">Undertekst</label>
                   <textarea
                     rows={2}
                     value={data.sections.hero.subtitle}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
-                          hero: { ...data.sections.hero, subtitle: e.target.value },
+                          ...prev.sections,
+                          hero: { ...prev.sections.hero, subtitle: e.target.value },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-300 uppercase">YouTube Video ID (Baggrundsvideo)</label>
+                  <label className="block text-[10px] font-bold text-zinc-300 uppercase">YouTube Video ID</label>
                   <input
                     type="text"
                     value={data.sections.hero.videoBackground?.youtubeId || 'MHUuvjLxTrg'}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
+                          ...prev.sections,
                           hero: {
-                            ...data.sections.hero,
+                            ...prev.sections.hero,
                             videoBackground: {
-                              ...(data.sections.hero.videoBackground || {
+                              ...(prev.sections.hero.videoBackground || {
                                 enabled: true,
                                 videoUrl: 'https://youtu.be/MHUuvjLxTrg',
                                 startTime: 0,
                                 endTime: 39,
-                                posterImage: 'https://cafeemil.dk/wp-content/uploads/2024/12/forside-cafeemil.jpg',
+                                posterImage: '',
                               }),
                               youtubeId: e.target.value,
                             },
                           },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white font-mono"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white font-mono"
                   />
                 </div>
 
                 <div>
                   <ImageUploader
-                    label="Plakat Billede Fallback"
+                    label="Baggrundsbillede Fallback"
                     value={data.sections.hero.videoBackground?.posterImage || ''}
                     onChange={(url) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
+                          ...prev.sections,
                           hero: {
-                            ...data.sections.hero,
+                            ...prev.sections.hero,
                             videoBackground: {
-                              ...(data.sections.hero.videoBackground || {
+                              ...(prev.sections.hero.videoBackground || {
                                 enabled: true,
                                 youtubeId: 'MHUuvjLxTrg',
                                 videoUrl: 'https://youtu.be/MHUuvjLxTrg',
@@ -1226,17 +1348,16 @@ export default function AdminDashboardPage() {
                             },
                           },
                         },
-                      })
+                      }))
                     }
-                    description="Baggrundsbillede der vises inden videoen afspilles eller hvis video ikke understøttes."
                   />
                 </div>
               </div>
             </div>
 
             {/* 2. BRUNCH SEKTION */}
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
-              <h3 className="text-base font-bold text-white flex items-center gap-2 text-amber-300">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 text-amber-300">
                 <span>🍳 02 — Brunch Sektion</span>
               </h3>
 
@@ -1247,15 +1368,15 @@ export default function AdminDashboardPage() {
                     type="text"
                     value={data.sections.brunch.title}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
-                          brunch: { ...data.sections.brunch, title: e.target.value },
+                          ...prev.sections,
+                          brunch: { ...prev.sections.brunch, title: e.target.value },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                   />
                 </div>
                 <div>
@@ -1264,15 +1385,15 @@ export default function AdminDashboardPage() {
                     type="text"
                     value={data.sections.brunch.hours}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
-                          brunch: { ...data.sections.brunch, hours: e.target.value },
+                          ...prev.sections,
+                          brunch: { ...prev.sections.brunch, hours: e.target.value },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -1281,23 +1402,23 @@ export default function AdminDashboardPage() {
                     type="text"
                     value={data.sections.brunch.priceNote}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
-                          brunch: { ...data.sections.brunch, priceNote: e.target.value },
+                          ...prev.sections,
+                          brunch: { ...prev.sections.brunch, priceNote: e.target.value },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                   />
                 </div>
               </div>
             </div>
 
             {/* 3. SELSKABER SEKTION */}
-            <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
-              <h3 className="text-base font-bold text-white flex items-center gap-2 text-amber-300">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 text-amber-300">
                 <span>🥂 03 — Selskaber &amp; Private Fester</span>
               </h3>
 
@@ -1308,15 +1429,15 @@ export default function AdminDashboardPage() {
                     type="text"
                     value={data.sections.selskaber.title}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
-                          selskaber: { ...data.sections.selskaber, title: e.target.value },
+                          ...prev.sections,
+                          selskaber: { ...prev.sections.selskaber, title: e.target.value },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                   />
                 </div>
                 <div>
@@ -1325,15 +1446,15 @@ export default function AdminDashboardPage() {
                     type="text"
                     value={data.sections.selskaber.lead}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
-                          selskaber: { ...data.sections.selskaber, lead: e.target.value },
+                          ...prev.sections,
+                          selskaber: { ...prev.sections.selskaber, lead: e.target.value },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -1342,104 +1463,40 @@ export default function AdminDashboardPage() {
                     rows={2}
                     value={data.sections.selskaber.description}
                     onChange={(e) =>
-                      setData({
-                        ...data,
+                      updateData((prev) => ({
+                        ...prev,
                         sections: {
-                          ...data.sections,
-                          selskaber: { ...data.sections.selskaber, description: e.target.value },
+                          ...prev.sections,
+                          selskaber: { ...prev.sections.selskaber, description: e.target.value },
                         },
-                      })
+                      }))
                     }
-                    className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                    className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                   />
                 </div>
               </div>
             </div>
-
-            {/* 4. OM OS & FILOSOFI */}
-            {data.sections.omOs && (
-              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
-                <h3 className="text-base font-bold text-white flex items-center gap-2 text-amber-300">
-                  <span>📖 04 — Om Café Emil Historie</span>
-                </h3>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[10px] font-bold text-zinc-300 uppercase">Titel</label>
-                    <input
-                      type="text"
-                      value={data.sections.omOs.title}
-                      onChange={(e) =>
-                        setData({
-                          ...data,
-                          sections: {
-                            ...data.sections,
-                            omOs: { ...data.sections.omOs, title: e.target.value },
-                          },
-                        })
-                      }
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-zinc-300 uppercase">Afsnit 1</label>
-                    <textarea
-                      rows={2}
-                      value={data.sections.omOs.storyP1}
-                      onChange={(e) =>
-                        setData({
-                          ...data,
-                          sections: {
-                            ...data.sections,
-                            omOs: { ...data.sections.omOs, storyP1: e.target.value },
-                          },
-                        })
-                      }
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-zinc-300 uppercase">Afsnit 2</label>
-                    <textarea
-                      rows={2}
-                      value={data.sections.omOs.storyP2}
-                      onChange={(e) =>
-                        setData({
-                          ...data,
-                          sections: {
-                            ...data.sections,
-                            omOs: { ...data.sections.omOs, storyP2: e.target.value },
-                          },
-                        })
-                      }
-                      className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
         {/* ========================================================
-            TAB 5: ANMELDELSER (Testimonials CRUD)
+            TAB 5: ANMELDELSER (Testimonials)
             ======================================================== */}
         {activeTab === 'testimonials' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Star className="w-5 h-5 text-amber-400 fill-current" />
+                <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                  <Star className="w-5 h-5 text-amber-400 fill-current shrink-0" />
                   <span>Kundeanmeldelser &amp; Citater ({data.testimonials?.length || 0})</span>
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Styr de anmeldelser, der vises på forsiden i sektionen &ldquo;Here’s What Our Foodies Are Raving About&rdquo;.
+                  Styr de anmeldelser, der fremhæves på forsiden.
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={() => {
                   const newTestimonial: TestimonialItem = {
                     id: `test-${Date.now()}`,
@@ -1448,92 +1505,98 @@ export default function AdminDashboardPage() {
                     rating: 5,
                     quote: 'Fantastisk oplevelse og super god mad hos Café Emil!',
                   };
-                  setData({
-                    ...data,
-                    testimonials: [newTestimonial, ...(data.testimonials || [])],
-                  });
+                  updateData((prev) => ({
+                    ...prev,
+                    testimonials: [newTestimonial, ...prev.testimonials],
+                  }));
                 }}
-                className="px-4 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-red-600/25 self-start sm:self-auto"
+                className="px-4 py-2.5 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-red-600/30 self-start sm:self-auto active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tilføj Anmeldelse</span>
               </button>
             </div>
 
-            <div className="space-y-4">
-              {data.testimonials?.map((t, idx) => (
-                <div key={t.id || idx} className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-zinc-400">Navn</label>
-                        <input
-                          type="text"
-                          value={t.name}
-                          onChange={(e) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {data.testimonials.map((test, idx) => (
+                <div
+                  key={test.id}
+                  className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-3 hover:border-white/20 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    {/* Star Rating Picker */}
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => {
                             const updated = [...data.testimonials];
-                            updated[idx].name = e.target.value;
-                            setData({ ...data, testimonials: updated });
+                            updated[idx].rating = star;
+                            updateData((prev) => ({ ...prev, testimonials: updated }));
                           }}
-                          className="w-full mt-1 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white font-bold"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-zinc-400">Rolle / Type</label>
-                        <input
-                          type="text"
-                          value={t.role}
-                          onChange={(e) => {
-                            const updated = [...data.testimonials];
-                            updated[idx].role = e.target.value;
-                            setData({ ...data, testimonials: updated });
-                          }}
-                          className="w-full mt-1 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-amber-400">Stjerner (1-5)</label>
-                        <select
-                          value={t.rating}
-                          onChange={(e) => {
-                            const updated = [...data.testimonials];
-                            updated[idx].rating = parseInt(e.target.value) || 5;
-                            setData({ ...data, testimonials: updated });
-                          }}
-                          className="w-full mt-1 px-3 py-1.5 rounded-lg bg-[#141011] border border-white/10 text-xs text-amber-400 font-bold"
+                          className={`p-0.5 transition-transform hover:scale-110 ${
+                            star <= test.rating ? 'text-amber-400 fill-amber-400' : 'text-zinc-600'
+                          }`}
                         >
-                          {[5, 4, 3, 2, 1].map((stars) => (
-                            <option key={stars} value={stars}>
-                              {stars} ★★★★★ (af 5)
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                          <Star className="w-4 h-4" />
+                        </button>
+                      ))}
                     </div>
 
                     <button
+                      type="button"
                       onClick={() => {
                         const updated = data.testimonials.filter((_, i) => i !== idx);
-                        setData({ ...data, testimonials: updated });
+                        updateData((prev) => ({ ...prev, testimonials: updated }));
                       }}
-                      className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 self-end sm:self-auto"
+                      className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
                       title="Slet anmeldelse"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-zinc-400">Navn</label>
+                      <input
+                        type="text"
+                        value={test.name}
+                        onChange={(e) => {
+                          const updated = [...data.testimonials];
+                          updated[idx].name = e.target.value;
+                          updateData((prev) => ({ ...prev, testimonials: updated }));
+                        }}
+                        className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-zinc-400">Rolle / Beskrivelse</label>
+                      <input
+                        type="text"
+                        value={test.role}
+                        onChange={(e) => {
+                          const updated = [...data.testimonials];
+                          updated[idx].role = e.target.value;
+                          updateData((prev) => ({ ...prev, testimonials: updated }));
+                        }}
+                        className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block text-[10px] uppercase font-bold text-zinc-400">Gæstens Citat</label>
+                    <label className="block text-[10px] uppercase font-bold text-zinc-400">Citat / Udtalelse</label>
                     <textarea
-                      rows={2}
-                      value={t.quote}
+                      rows={3}
+                      value={test.quote}
                       onChange={(e) => {
                         const updated = [...data.testimonials];
                         updated[idx].quote = e.target.value;
-                        setData({ ...data, testimonials: updated });
+                        updateData((prev) => ({ ...prev, testimonials: updated }));
                       }}
-                      className="w-full mt-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
+                      className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                     />
                   </div>
                 </div>
@@ -1543,34 +1606,35 @@ export default function AdminDashboardPage() {
         )}
 
         {/* ========================================================
-            TAB 6: FAQ (Ofte Stillede Spørgsmål CRUD)
+            TAB 6: FAQ
             ======================================================== */}
         {activeTab === 'faqs' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-amber-400" />
-                  <span>Ofte Stillede Spørgsmål (FAQ) ({data.faqs?.length || 0})</span>
+                <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-amber-400 shrink-0" />
+                  <span>Ofte Stillede Spørgsmål ({data.faqs?.length || 0})</span>
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Rediger eller tilføj spørgsmål og svar, som vises i accordion-sektionen for gæster.
+                  FAQ spørgsmål &amp; svar der vises til gæster.
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={() => {
                   const newFaq: FaqItem = {
                     id: `faq-${Date.now()}`,
                     q: 'Nyt spørgsmål?',
-                    a: 'Svar på det nye spørgsmål her...',
+                    a: 'Svar her...',
                   };
-                  setData({
-                    ...data,
-                    faqs: [...(data.faqs || []), newFaq],
-                  });
+                  updateData((prev) => ({
+                    ...prev,
+                    faqs: [...prev.faqs, newFaq],
+                  }));
                 }}
-                className="px-4 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-red-600/25 self-start sm:self-auto"
+                className="px-4 py-2.5 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-red-600/30 self-start sm:self-auto active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tilføj Spørgsmål</span>
@@ -1578,28 +1642,32 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="space-y-4">
-              {data.faqs?.map((faq, idx) => (
-                <div key={faq.id || idx} className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-3">
-                  <div className="flex items-center justify-between gap-3">
+              {data.faqs.map((faq, idx) => (
+                <div
+                  key={faq.id}
+                  className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-3 hover:border-white/20 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
-                      <label className="block text-[10px] uppercase font-bold text-amber-300">Spørgsmål #{idx + 1}</label>
+                      <label className="block text-[10px] uppercase font-bold text-amber-300">Spørgsmål</label>
                       <input
                         type="text"
                         value={faq.q}
                         onChange={(e) => {
                           const updated = [...data.faqs];
                           updated[idx].q = e.target.value;
-                          setData({ ...data, faqs: updated });
+                          updateData((prev) => ({ ...prev, faqs: updated }));
                         }}
-                        className="w-full mt-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-sm text-white font-bold"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-black/40 border border-white/10 text-xs sm:text-sm text-white font-bold"
                       />
                     </div>
                     <button
+                      type="button"
                       onClick={() => {
                         const updated = data.faqs.filter((_, i) => i !== idx);
-                        setData({ ...data, faqs: updated });
+                        updateData((prev) => ({ ...prev, faqs: updated }));
                       }}
-                      className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 mt-4"
+                      className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 mt-5 shrink-0"
                       title="Slet FAQ"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1614,9 +1682,9 @@ export default function AdminDashboardPage() {
                       onChange={(e) => {
                         const updated = [...data.faqs];
                         updated[idx].a = e.target.value;
-                        setData({ ...data, faqs: updated });
+                        updateData((prev) => ({ ...prev, faqs: updated }));
                       }}
-                      className="w-full mt-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
+                      className="w-full mt-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                     />
                   </div>
                 </div>
@@ -1629,15 +1697,15 @@ export default function AdminDashboardPage() {
             TAB 7: GALLERI
             ======================================================== */}
         {activeTab === 'gallery' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-amber-400" />
-                  <span>Galleri Billeder ({data.gallery.length})</span>
+                <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-amber-400 shrink-0" />
+                  <span>Galleri &amp; Fotos ({data.gallery.length})</span>
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Styr billederne i fotogalleriet på forside og på /galleri. Upload nye fotos direkte fra computer eller telefon.
+                  Upload stemningsbilleder, madfotos og terrassebilleder til galleriet.
                 </p>
               </div>
 
@@ -1651,12 +1719,12 @@ export default function AdminDashboardPage() {
                 onChange={(e) => handleGalleryUpload(e.target.files)}
               />
 
-              <div className="flex items-center gap-2 self-start sm:self-auto">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
                   disabled={isGalleryUploading}
                   onClick={() => galleryFileInputRef.current?.click()}
-                  className="px-4 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg shadow-red-600/25 disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-red-600/30 active:scale-95 disabled:opacity-50"
                 >
                   {isGalleryUploading ? (
                     <>
@@ -1666,7 +1734,7 @@ export default function AdminDashboardPage() {
                   ) : (
                     <>
                       <UploadCloud className="w-4 h-4" />
-                      <span>Upload Nye Billeder</span>
+                      <span>Upload Fotos</span>
                     </>
                   )}
                 </button>
@@ -1680,21 +1748,19 @@ export default function AdminDashboardPage() {
                       category: 'food',
                       src: 'https://cafeemil.dk/wp-content/uploads/2024/12/332323.jpg',
                     };
-                    setData({
-                      ...data,
-                      gallery: [newItem, ...data.gallery],
-                    });
+                    updateData((prev) => ({
+                      ...prev,
+                      gallery: [newItem, ...prev.gallery],
+                    }));
                   }}
-                  className="px-3 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  title="Tilføj billede manuelt via URL"
+                  className="px-3.5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-bold transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">Manuel URL</span>
                 </button>
               </div>
             </div>
 
-            {/* Drag and drop banner for gallery */}
+            {/* Drag & Drop Zone */}
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
@@ -1702,173 +1768,237 @@ export default function AdminDashboardPage() {
                 handleGalleryUpload(e.dataTransfer.files);
               }}
               onClick={() => !isGalleryUploading && galleryFileInputRef.current?.click()}
-              className="border border-dashed border-white/15 hover:border-amber-400/40 bg-white/[0.02] hover:bg-white/5 rounded-2xl p-4 text-center cursor-pointer transition-all"
+              className="border-2 border-dashed border-white/15 hover:border-amber-400/50 bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 group"
             >
-              <div className="flex items-center justify-center gap-2 text-xs text-zinc-400">
-                <UploadCloud className="w-4 h-4 text-amber-400" />
-                <span>Træk og slip billedfiler her for at tilføje dem direkte til galleriet</span>
+              <div className="flex flex-col items-center justify-center gap-2 text-xs text-zinc-400">
+                <div className="w-10 h-10 rounded-full bg-amber-400/10 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <UploadCloud className="w-5 h-5" />
+                </div>
+                <p className="font-bold text-white text-sm">Træk &amp; slip billeder her</p>
+                <p className="text-[11px] text-zinc-400">eller klik for at vælge fra din computer eller mobil (JPG, PNG, WEBP)</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.gallery.map((item, idx) => (
-                <div key={item.id || idx} className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-4">
-                  <ImageUploader
-                    label={`Billede #${idx + 1}`}
-                    value={item.src}
-                    onChange={(url) => {
-                      const updated = [...data.gallery];
-                      updated[idx].src = url;
-                      setData({ ...data, gallery: updated });
-                    }}
-                  />
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {['alle', 'food', 'drinks', 'interior', 'terrace'].map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setGalleryCategoryFilter(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+                    galleryCategoryFilter === cat
+                      ? 'bg-white text-black shadow-md'
+                      : 'bg-white/5 text-zinc-400 hover:text-white border border-white/10'
+                  }`}
+                >
+                  {cat === 'alle'
+                    ? 'Alle'
+                    : cat === 'food'
+                    ? 'Mad'
+                    : cat === 'drinks'
+                    ? 'Drikke'
+                    : cat === 'interior'
+                    ? 'Indendørs'
+                    : 'Terrasse'}
+                </button>
+              ))}
+            </div>
 
-                  <div className="space-y-2 pt-1 border-t border-white/5">
-                    <div>
-                      <label className="block text-[10px] uppercase font-bold text-zinc-400">Billedtitel</label>
+            {/* Gallery Image Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredGalleryItems.map((item, idx) => {
+                const originalIndex = data.gallery.findIndex((g) => g.id === item.id);
+                return (
+                  <div
+                    key={item.id || idx}
+                    className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden space-y-3 p-3 group hover:border-white/25 transition-all"
+                  >
+                    <div className="aspect-[4/3] rounded-xl overflow-hidden bg-black/40 relative">
+                      <img
+                        src={item.src}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <span className="absolute top-2 left-2 text-[9px] uppercase font-bold text-white bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
+                        {item.category}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = data.gallery.filter((g) => g.id !== item.id);
+                          updateData((prev) => ({ ...prev, gallery: updated }));
+                        }}
+                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Slet billede"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
                       <input
                         type="text"
                         value={item.title}
                         onChange={(e) => {
                           const updated = [...data.gallery];
-                          updated[idx].title = e.target.value;
-                          setData({ ...data, gallery: updated });
+                          updated[originalIndex].title = e.target.value;
+                          updateData((prev) => ({ ...prev, gallery: updated }));
                         }}
-                        className="w-full mt-1 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
+                        placeholder="Billedtitel..."
+                        className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
                       />
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-zinc-400">Kategori</label>
-                        <select
-                          value={item.category}
-                          onChange={(e) => {
-                            const updated = [...data.gallery];
-                            updated[idx].category = e.target.value;
-                            setData({ ...data, gallery: updated });
-                          }}
-                          className="w-full mt-1 px-2 py-1.5 rounded-lg bg-[#141011] border border-white/10 text-xs text-white"
-                        >
-                          <option value="food">Mad (food)</option>
-                          <option value="interior">Indendørs (interior)</option>
-                          <option value="terrace">Terrasse (terrace)</option>
-                          <option value="drinks">Drikke (drinks)</option>
-                        </select>
-                      </div>
-
-                      <div className="flex items-end">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = data.gallery.filter((_, i) => i !== idx);
-                            setData({ ...data, gallery: updated });
-                          }}
-                          className="w-full py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Slet</span>
-                        </button>
-                      </div>
+                      <select
+                        value={item.category}
+                        onChange={(e) => {
+                          const updated = [...data.gallery];
+                          updated[originalIndex].category = e.target.value;
+                          updateData((prev) => ({ ...prev, gallery: updated }));
+                        }}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-[#141011] border border-white/10 text-xs text-zinc-300"
+                      >
+                        <option value="food">Mad (food)</option>
+                        <option value="drinks">Drikke (drinks)</option>
+                        <option value="interior">Indendørs (interior)</option>
+                        <option value="terrace">Terrasse (terrace)</option>
+                      </select>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* ========================================================
-            TAB 8: MEDIEARKIV & BILLEDER
+            TAB 8: MEDIEARKIV
             ======================================================== */}
         {activeTab === 'media' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-6 animate-page-enter">
             <MediaLibrary />
           </div>
         )}
 
         {/* ========================================================
-            TAB 8: SEO & METADATA
+            TAB 9: SEO & METADATA (With Google SERP Preview)
             ======================================================== */}
         {activeTab === 'seo' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-8 animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-8 animate-page-enter">
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Search className="w-5 h-5 text-amber-400" />
+              <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                <Globe className="w-5 h-5 text-amber-400 shrink-0" />
                 <span>SEO &amp; Google Søgemaskineoptimering</span>
               </h2>
               <p className="text-xs text-zinc-400 mt-1">
-                Juster sidetitler, metabeskrivelser og nøgleord for hver URL. Opdateres i browserens fane og i Google søgeresultater.
+                Juster sidetitler og metabeskrivelser. Nedenfor kan du se, præcis hvordan Google viser siden til gæster.
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
               {Object.entries(data.seo).map(([path, seo]) => (
-                <div key={path} className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-3">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                    <span className="font-mono text-xs font-bold text-amber-300 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
+                <div
+                  key={path}
+                  className="p-5 sm:p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4 hover:border-white/20 transition-colors"
+                >
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <span className="font-mono text-xs font-bold text-amber-300 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
                       Rute: {path}
+                    </span>
+                    <span className="text-[11px] text-zinc-400">
+                      cafeemil.dk{path === '/' ? '' : path}
                     </span>
                   </div>
 
-                  <div className="space-y-3">
+                  {/* Google Search Live Preview */}
+                  <div className="p-4 rounded-xl bg-[#1F1F1F] border border-white/10 space-y-1">
+                    <div className="flex items-center gap-2 text-xs text-zinc-400">
+                      <span className="text-emerald-400 font-mono">https://cafeemil.dk{path === '/' ? '' : path}</span>
+                    </div>
+                    <h4 className="text-base font-semibold text-[#8AB4F8] hover:underline cursor-pointer truncate">
+                      {seo.title || 'Café Emil | Valby'}
+                    </h4>
+                    <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed">
+                      {seo.description || 'Besøg Café Emil i Valby og nyd brunch, burgere og hygge...'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
                     <div>
-                      <label className="block text-[10px] font-bold text-zinc-300 uppercase">
-                        Sidetitel (&lt;title&gt;)
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[10px] font-bold text-zinc-300 uppercase">
+                          Sidetitel (&lt;title&gt;)
+                        </label>
+                        <span
+                          className={`text-[10px] font-mono ${
+                            (seo.title?.length || 0) > 60 ? 'text-amber-400' : 'text-zinc-500'
+                          }`}
+                        >
+                          {seo.title?.length || 0} / 60 tegn
+                        </span>
+                      </div>
                       <input
                         type="text"
                         value={seo.title}
                         onChange={(e) => {
-                          setData({
-                            ...data,
+                          updateData((prev) => ({
+                            ...prev,
                             seo: {
-                              ...data.seo,
-                              [path]: { ...data.seo[path], title: e.target.value },
+                              ...prev.seo,
+                              [path]: { ...prev.seo[path], title: e.target.value },
                             },
-                          });
+                          }));
                         }}
-                        className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-zinc-300 uppercase">
-                        Metabeskrivelse (Google Snippet)
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[10px] font-bold text-zinc-300 uppercase">
+                          Metabeskrivelse (Google Snippet)
+                        </label>
+                        <span
+                          className={`text-[10px] font-mono ${
+                            (seo.description?.length || 0) > 160 ? 'text-amber-400' : 'text-zinc-500'
+                          }`}
+                        >
+                          {seo.description?.length || 0} / 160 tegn
+                        </span>
+                      </div>
                       <textarea
                         rows={2}
                         value={seo.description}
                         onChange={(e) => {
-                          setData({
-                            ...data,
+                          updateData((prev) => ({
+                            ...prev,
                             seo: {
-                              ...data.seo,
-                              [path]: { ...data.seo[path], description: e.target.value },
+                              ...prev.seo,
+                              [path]: { ...prev.seo[path], description: e.target.value },
                             },
-                          });
+                          }));
                         }}
-                        className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                       />
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-bold text-zinc-300 uppercase">
-                        Søgeord / Keywords (komma-separeret)
+                        Søgeord / Keywords (komma-adskilt)
                       </label>
                       <input
                         type="text"
                         value={seo.keywords}
                         onChange={(e) => {
-                          setData({
-                            ...data,
+                          updateData((prev) => ({
+                            ...prev,
                             seo: {
-                              ...data.seo,
-                              [path]: { ...data.seo[path], keywords: e.target.value },
+                              ...prev.seo,
+                              [path]: { ...prev.seo[path], keywords: e.target.value },
                             },
-                          });
+                          }));
                         }}
-                        className="w-full mt-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-zinc-300"
+                        className="w-full mt-1 px-3.5 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-zinc-300"
                       />
                     </div>
                   </div>
@@ -1879,13 +2009,13 @@ export default function AdminDashboardPage() {
         )}
 
         {/* ========================================================
-            TAB 9: SIKKERHED & ADGANGSKODE
+            TAB 10: SIKKERHED & ADGANGSKODE
             ======================================================== */}
         {activeTab === 'security' && (
-          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-8 border border-white/15 shadow-2xl space-y-6 max-w-2xl animate-page-enter">
+          <div className="bg-[#181415]/90 backdrop-blur-2xl rounded-3xl p-5 sm:p-8 border border-white/15 shadow-2xl space-y-6 max-w-xl animate-page-enter">
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Key className="w-5 h-5 text-amber-400" />
+              <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                <Key className="w-5 h-5 text-amber-400 shrink-0" />
                 <span>Skift Administrator Adgangskode</span>
               </h2>
               <p className="text-xs text-zinc-400 mt-1">
@@ -1915,14 +2045,23 @@ export default function AdminDashboardPage() {
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">
                   Nuværende Adgangskode
                 </label>
-                <input
-                  type="password"
-                  required
-                  value={pwdCurrent}
-                  onChange={(e) => setPwdCurrent(e.target.value)}
-                  placeholder="Indtast nuværende kode (standard: CafeEmil2025!)"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red"
-                />
+                <div className="relative">
+                  <input
+                    type={showPasswords ? 'text' : 'password'}
+                    required
+                    value={pwdCurrent}
+                    onChange={(e) => setPwdCurrent(e.target.value)}
+                    placeholder="Indtast nuværende kode..."
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white focus:outline-none focus:border-emil-red pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(!showPasswords)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+                  >
+                    {showPasswords ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1.5">
@@ -1930,7 +2069,7 @@ export default function AdminDashboardPage() {
                   Ny Adgangskode (min. 8 tegn)
                 </label>
                 <input
-                  type="password"
+                  type={showPasswords ? 'text' : 'password'}
                   required
                   value={pwdNew}
                   onChange={(e) => setPwdNew(e.target.value)}
@@ -1944,7 +2083,7 @@ export default function AdminDashboardPage() {
                   Bekræft Ny Adgangskode
                 </label>
                 <input
-                  type="password"
+                  type={showPasswords ? 'text' : 'password'}
                   required
                   value={pwdConfirm}
                   onChange={(e) => setPwdConfirm(e.target.value)}
@@ -1957,7 +2096,7 @@ export default function AdminDashboardPage() {
                 <button
                   type="submit"
                   disabled={pwdLoading}
-                  className="px-6 py-3 rounded-full bg-emil-red hover:bg-emil-redHover active:scale-95 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl shadow-red-600/30 disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-red-600/30 active:scale-95 disabled:opacity-50"
                 >
                   <Key className="w-4 h-4" />
                   <span>{pwdLoading ? 'Opdaterer...' : 'Opdater Adgangskode'}</span>
@@ -1967,7 +2106,17 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-      </div>
+      </main>
+
+      {/* ========================================================
+          FLOATING STICKY ACTION BAR (Always Accessible)
+          ======================================================== */}
+      <AdminStickyBar
+        saving={saving}
+        onSave={handleSave}
+        hasUnsavedChanges={hasUnsavedChanges}
+        lastSaved={lastSaved}
+      />
     </div>
   );
 }
