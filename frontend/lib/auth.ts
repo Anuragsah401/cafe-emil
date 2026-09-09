@@ -14,32 +14,42 @@ const BACKEND_URL =
 
 // Delegate login verification to backend
 export async function validateLogin(username: string, passwordPlain: string): Promise<{ success: boolean; token?: string; error?: string }> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password: passwordPlain }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      return { success: false, error: data.error || 'Ugyldigt brugernavn eller adgangskode' };
-    }
-
-    return { success: true, token: data.token };
-  } catch (err) {
-    // If backend is offline, check fallback local credentials for uninterrupted access
-    const isDefault =
-      (username.trim().toLowerCase() === 'admin' || username.trim().toLowerCase() === 'admin@cafeemil.dk') &&
-      passwordPlain === 'CafeEmil2025!';
-
-    if (isDefault) {
-      const fallbackToken = createSessionToken('admin');
-      return { success: true, token: fallbackToken };
-    }
-
-    return { success: false, error: 'Kunne ikke forbinde til backend server' };
+  const urls = [BACKEND_URL];
+  if (!urls.includes('http://localhost:5001')) {
+    urls.push('http://localhost:5001');
   }
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(`${url}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password: passwordPlain }),
+        signal: AbortSignal.timeout(3000),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Ugyldigt brugernavn eller adgangskode' };
+      }
+
+      return { success: true, token: data.token };
+    } catch {
+      // Try next URL
+    }
+  }
+
+  // If all backend URLs are offline, check fallback local credentials for uninterrupted access
+  const isDefault =
+    (username.trim().toLowerCase() === 'admin' || username.trim().toLowerCase() === 'admin@cafeemil.dk') &&
+    passwordPlain === 'CafeEmil2025!';
+
+  if (isDefault) {
+    const fallbackToken = createSessionToken('admin');
+    return { success: true, token: fallbackToken };
+  }
+
+  return { success: false, error: 'Kunne ikke forbinde til backend server' };
 }
 
 // Delegate password change to backend
@@ -48,25 +58,36 @@ export async function changePasswordWithBackend(
   newPassword: string,
   token?: string
 ): Promise<{ success: boolean; token?: string; error?: string }> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/auth/change-password`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token || ''}`,
-      },
-      body: JSON.stringify({ currentPassword, newPassword }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      return { success: false, error: data.error || 'Kunne ikke ændre adgangskode' };
-    }
-
-    return { success: true, token: data.token };
-  } catch (err) {
-    return { success: false, error: 'Kunne ikke forbinde til backend server' };
+  const urls = [BACKEND_URL];
+  if (!urls.includes('http://localhost:5001')) {
+    urls.push('http://localhost:5001');
   }
+
+  let lastError: string | null = null;
+  for (const url of urls) {
+    try {
+      const res = await fetch(`${url}/api/auth/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token || ''}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+        signal: AbortSignal.timeout(3000),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Kunne ikke ændre adgangskode' };
+      }
+
+      return { success: true, token: data.token };
+    } catch (err: any) {
+      lastError = err?.message || 'Server utilgængelig';
+    }
+  }
+
+  return { success: false, error: lastError || 'Kunne ikke forbinde til backend server' };
 }
 
 // Generate signed token

@@ -10,26 +10,36 @@ const BACKEND_URL =
 export async function GET() {
   let backendOnline = false;
   let supabaseConnected = false;
+  let activeBackendUrl = BACKEND_URL;
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/health`, {
-      cache: 'no-store',
-      signal: AbortSignal.timeout(2000),
-    });
+  const urlsToTry = [BACKEND_URL];
+  if (!urlsToTry.includes('http://localhost:5001')) {
+    urlsToTry.push('http://localhost:5001');
+  }
 
-    if (res.ok) {
-      const data = await res.json();
-      backendOnline = true;
-      supabaseConnected = Boolean(data.supabaseConnected);
+  for (const url of urlsToTry) {
+    try {
+      const res = await fetch(`${url}/api/health`, {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        backendOnline = true;
+        supabaseConnected = Boolean(data.supabaseConnected);
+        activeBackendUrl = url;
+        break;
+      }
+    } catch {
+      // Continue to fallback
     }
-  } catch (err) {
-    backendOnline = false;
   }
 
   return NextResponse.json({
     backendOnline,
     supabaseConnected,
-    backendUrl: BACKEND_URL,
+    backendUrl: activeBackendUrl,
     readyForProduction: backendOnline && supabaseConnected,
   });
 }

@@ -6,20 +6,27 @@ const BACKEND_URL =
   'http://localhost:5001';
 
 export async function getServerCmsData(): Promise<CmsData> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/cms`, {
-      cache: 'no-store',
-      signal: AbortSignal.timeout(3500),
-    });
+  const urls = [BACKEND_URL];
+  if (!urls.includes('http://localhost:5001')) {
+    urls.push('http://localhost:5001');
+  }
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data && typeof data === 'object' && data.restaurant) {
-        return data as CmsData;
+  for (const url of urls) {
+    try {
+      const res = await fetch(`${url}/api/cms`, {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && typeof data === 'object' && data.restaurant) {
+          return data as CmsData;
+        }
       }
+    } catch {
+      // Continue to next URL
     }
-  } catch (error) {
-    // Graceful fallback to static seed data if backend is starting or offline
   }
 
   return getCmsData();
@@ -33,17 +40,31 @@ export async function updateCmsData(newData: Partial<CmsData>, token?: string): 
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${BACKEND_URL}/api/cms`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(newData),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Fejl ved opdatering af CMS i backend');
+  const urls = [BACKEND_URL];
+  if (!urls.includes('http://localhost:5001')) {
+    urls.push('http://localhost:5001');
   }
 
-  const json = await res.json();
-  return json.data;
+  let lastError: any = null;
+  for (const url of urls) {
+    try {
+      const res = await fetch(`${url}/api/cms`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(newData),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      } else {
+        const err = await res.json().catch(() => ({}));
+        lastError = err.error || `Fejl fra server (${res.status})`;
+      }
+    } catch (e: any) {
+      lastError = e?.message || 'Server utilgængelig';
+    }
+  }
+
+  throw new Error(lastError || 'Fejl ved opdatering af CMS i backend');
 }
