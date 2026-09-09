@@ -14,6 +14,13 @@ interface SoundTrack {
 
 const TRACKS: SoundTrack[] = [
   {
+    id: 'paris-jazz',
+    name: 'Fransk Lounge Jazz',
+    desc: 'Afslappende café loungemusik',
+    icon: '🎹',
+    src: '/audio/cafe-jazz.mp3',
+  },
+  {
     id: 'soft-jazz',
     name: 'Rolig Café Jazz',
     desc: 'Blød vibrafon & dæmpet jazzklaver',
@@ -26,13 +33,6 @@ const TRACKS: SoundTrack[] = [
     desc: 'Varm akustisk jazzguitar & blide rytmer',
     icon: '☕',
     src: '/audio/cafe-bossa-jazz.mp3',
-  },
-  {
-    id: 'paris-jazz',
-    name: 'Fransk Lounge Jazz',
-    desc: 'Afslappende café loungemusik',
-    icon: '🎹',
-    src: '/audio/cafe-jazz.mp3',
   },
 ];
 
@@ -50,13 +50,12 @@ export default function AmbientSoundPlayer() {
 
   const currentTrack = TRACKS[currentTrackIndex] || TRACKS[0];
 
-  // Initialize on client
+  // Initialize on client and automatically play default track (Fransk Lounge Jazz)
   useEffect(() => {
     // Check if user previously interacted with sound
     const savedMute = localStorage.getItem('cafeemil_sound_muted');
     const savedVol = localStorage.getItem('cafeemil_sound_vol');
     const savedTrack = localStorage.getItem('cafeemil_sound_track');
-    const dismissedInvite = localStorage.getItem('cafeemil_sound_dismissed');
 
     if (savedVol) {
       setVolume(parseFloat(savedVol));
@@ -69,19 +68,60 @@ export default function AmbientSoundPlayer() {
       if (idx !== -1) {
         setCurrentTrackIndex(idx);
       } else {
-        // Reset old/removed track IDs to default soft jazz
         setCurrentTrackIndex(0);
-        localStorage.setItem('cafeemil_sound_track', TRACKS[0].id);
       }
+    } else {
+      setCurrentTrackIndex(0);
     }
 
-    // Show friendly invitation after 2.5 seconds if user hasn't dismissed it
-    if (!dismissedInvite) {
-      const timer = setTimeout(() => {
-        setShowInvitation(true);
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
+    // Function to initiate automatic playback
+    const startPlayback = () => {
+      if (!audioRef.current) return;
+      const targetVol = savedMute === 'true' ? 0 : (savedVol ? parseFloat(savedVol) : 0.35);
+      audioRef.current.volume = targetVol;
+
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setShowInvitation(false);
+          })
+          .catch(() => {
+            // Browser autoplay policy prevented unprompted audio playback.
+            // Listen for first interaction (click, touch, scroll, keydown) to start playing immediately
+            const handleFirstInteraction = () => {
+              if (audioRef.current) {
+                audioRef.current.volume = targetVol;
+                audioRef.current
+                  .play()
+                  .then(() => {
+                    setIsPlaying(true);
+                    setShowInvitation(false);
+                  })
+                  .catch(() => {});
+              }
+              cleanup();
+            };
+
+            const cleanup = () => {
+              window.removeEventListener('click', handleFirstInteraction);
+              window.removeEventListener('touchstart', handleFirstInteraction);
+              window.removeEventListener('scroll', handleFirstInteraction);
+              window.removeEventListener('keydown', handleFirstInteraction);
+            };
+
+            window.addEventListener('click', handleFirstInteraction, { once: true });
+            window.addEventListener('touchstart', handleFirstInteraction, { once: true });
+            window.addEventListener('scroll', handleFirstInteraction, { once: true });
+            window.addEventListener('keydown', handleFirstInteraction, { once: true });
+          });
+      }
+    };
+
+    // Attempt playback immediately when component mounts
+    const timer = setTimeout(startPlayback, 120);
+    return () => clearTimeout(timer);
   }, []);
 
   // Update volume on audio element
@@ -198,7 +238,7 @@ export default function AmbientSoundPlayer() {
         ref={audioRef}
         src={currentTrack.src}
         loop
-        preload="none"
+        preload="auto"
       />
 
       {/* Floating Widget Container (Bottom Left) */}
