@@ -52,17 +52,18 @@ export default function AmbientSoundPlayer() {
 
   // Initialize on client and automatically play default track (Fransk Lounge Jazz)
   useEffect(() => {
-    // Check if user previously interacted with sound
-    const savedMute = localStorage.getItem('cafeemil_sound_muted');
     const savedVol = localStorage.getItem('cafeemil_sound_vol');
     const savedTrack = localStorage.getItem('cafeemil_sound_track');
 
     if (savedVol) {
-      setVolume(parseFloat(savedVol));
+      const volNum = parseFloat(savedVol);
+      if (!isNaN(volNum) && volNum > 0) {
+        setVolume(volNum);
+      }
     }
-    if (savedMute === 'true') {
-      setIsMuted(true);
-    }
+    // Always start unmuted for default autoplay
+    setIsMuted(false);
+
     if (savedTrack) {
       const idx = TRACKS.findIndex((t) => t.id === savedTrack);
       if (idx !== -1) {
@@ -74,54 +75,70 @@ export default function AmbientSoundPlayer() {
       setCurrentTrackIndex(0);
     }
 
+    let isSubscribed = true;
+
     // Function to initiate automatic playback
     const startPlayback = () => {
-      if (!audioRef.current) return;
-      const targetVol = savedMute === 'true' ? 0 : (savedVol ? parseFloat(savedVol) : 0.35);
+      if (!audioRef.current || !isSubscribed) return;
+      const targetVol = savedVol ? Math.max(0.2, parseFloat(savedVol)) : 0.35;
       audioRef.current.volume = targetVol;
 
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            setIsPlaying(true);
-            setShowInvitation(false);
+            if (isSubscribed) {
+              setIsPlaying(true);
+              setShowInvitation(false);
+            }
           })
           .catch(() => {
-            // Browser autoplay policy prevented unprompted audio playback.
-            // Listen for first interaction (click, touch, scroll, keydown) to start playing immediately
-            const handleFirstInteraction = () => {
-              if (audioRef.current) {
-                audioRef.current.volume = targetVol;
-                audioRef.current
-                  .play()
-                  .then(() => {
+            // Browser autoplay policy prevented unprompted sound without prior user gesture.
+            // Attach capture-phase gesture listeners across document to start playing on very first user interaction
+            const unlockAudio = () => {
+              if (!audioRef.current) return;
+              audioRef.current.volume = targetVol;
+              const p = audioRef.current.play();
+              if (p !== undefined) {
+                p.then(() => {
+                  if (isSubscribed) {
                     setIsPlaying(true);
                     setShowInvitation(false);
-                  })
-                  .catch(() => {});
+                  }
+                  removeUnlockListeners();
+                }).catch(() => {
+                  // Keep listeners active if not yet unlocked
+                });
               }
-              cleanup();
             };
 
-            const cleanup = () => {
-              window.removeEventListener('click', handleFirstInteraction);
-              window.removeEventListener('touchstart', handleFirstInteraction);
-              window.removeEventListener('scroll', handleFirstInteraction);
-              window.removeEventListener('keydown', handleFirstInteraction);
+            const removeUnlockListeners = () => {
+              document.removeEventListener('pointerdown', unlockAudio, true);
+              document.removeEventListener('mousedown', unlockAudio, true);
+              document.removeEventListener('click', unlockAudio, true);
+              document.removeEventListener('touchstart', unlockAudio, true);
+              document.removeEventListener('touchend', unlockAudio, true);
+              document.removeEventListener('keydown', unlockAudio, true);
             };
 
-            window.addEventListener('click', handleFirstInteraction, { once: true });
-            window.addEventListener('touchstart', handleFirstInteraction, { once: true });
-            window.addEventListener('scroll', handleFirstInteraction, { once: true });
-            window.addEventListener('keydown', handleFirstInteraction, { once: true });
+            document.addEventListener('pointerdown', unlockAudio, { capture: true });
+            document.addEventListener('mousedown', unlockAudio, { capture: true });
+            document.addEventListener('click', unlockAudio, { capture: true });
+            document.addEventListener('touchstart', unlockAudio, { capture: true });
+            document.addEventListener('touchend', unlockAudio, { capture: true });
+            document.addEventListener('keydown', unlockAudio, { capture: true });
           });
       }
     };
 
-    // Attempt playback immediately when component mounts
-    const timer = setTimeout(startPlayback, 120);
-    return () => clearTimeout(timer);
+    // Attempt autoplay immediately and after a short tick
+    startPlayback();
+    const timer = setTimeout(startPlayback, 200);
+
+    return () => {
+      isSubscribed = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   // Update volume on audio element
@@ -237,8 +254,12 @@ export default function AmbientSoundPlayer() {
       <audio
         ref={audioRef}
         src={currentTrack.src}
+        autoPlay
+        playsInline
         loop
         preload="auto"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
       />
 
       {/* Floating Widget Container (Bottom Left) */}
