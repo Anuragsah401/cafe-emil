@@ -96,6 +96,15 @@ function authenticateToken(req, res, next) {
 // Health & Status Routes
 // ---------------------------------------------------------------------------
 
+app.get("/", (req, res) => {
+  res.json({
+    status: "ok",
+    service: "Cafe Emil Node.js & Supabase Backend",
+    health: "/api/health",
+    cms: "/api/cms",
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
