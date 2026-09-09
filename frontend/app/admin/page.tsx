@@ -380,14 +380,14 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Action Header Buttons */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Link
               href="/"
               target="_blank"
-              className="px-3 sm:px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all"
+              className="px-2.5 sm:px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all"
               title="Åbn websitet i ny fane"
             >
-              <span>Se Site</span>
+              <span className="hidden sm:inline">Se Site</span>
               <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
             </Link>
 
@@ -395,15 +395,20 @@ export default function AdminDashboardPage() {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-4 sm:px-5 py-2 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-red-600/30 active:scale-95 disabled:opacity-50"
+              className="px-3 sm:px-5 py-2 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-1.5 sm:gap-2 transition-all shadow-md shadow-red-600/30 active:scale-95 disabled:opacity-50"
             >
               {saving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Gemmer...</span>
+                </>
               ) : (
-                <Save className="w-3.5 h-3.5" />
+                <>
+                  <Save className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Gem Ændringer</span>
+                  <span className="sm:hidden">Gem</span>
+                </>
               )}
-              <span className="hidden sm:inline">{saving ? 'Gemmer...' : 'Gem Ændringer'}</span>
-              <span className="sm:hidden">{saving ? '...' : 'Gem'}</span>
             </button>
 
             <button
@@ -484,32 +489,10 @@ export default function AdminDashboardPage() {
         {/* ========================================================
             RESPONSIVE TAB SWITCHER
             ======================================================== */}
-        <div className="space-y-3">
-          {/* Mobile Select Dropdown (< sm) */}
-          <div className="sm:hidden">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-              Vælg Sektion
-            </label>
-            <div className="relative">
-              <select
-                value={activeTab}
-                onChange={(e) => setActiveTab(e.target.value as AdminTab)}
-                className="w-full px-4 py-3 rounded-2xl bg-[#181415] border border-white/15 text-sm text-white font-bold appearance-none focus:outline-none focus:border-emil-red pr-10"
-              >
-                {tabs.map((tab) => (
-                  <option key={tab.id} value={tab.id}>
-                    {tab.label} {tab.count !== null ? `(${tab.count})` : ''}
-                  </option>
-                ))}
-              </select>
-              <ChevronRight className="w-4 h-4 text-zinc-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none rotate-90" />
-            </div>
-          </div>
-
-          {/* Desktop & Tablet Pills (sm+) */}
+        <div className="relative">
           <nav
             aria-label="CMS sektioner"
-            className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none border-b border-white/10"
+            className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 no-scrollbar border-b border-white/10"
           >
             {tabs.map((tab) => {
               const Icon = tab.icon;
