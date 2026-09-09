@@ -28,6 +28,7 @@ import {
   UploadCloud,
   FolderOpen,
   Loader2,
+  Menu,
   X,
   Eye,
   EyeOff,
@@ -67,6 +68,7 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const [data, setData] = useState<CmsData | null>(null);
   const [activeTab, setActiveTab] = useState<AdminTab>('general');
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -137,6 +139,34 @@ export default function AdminDashboardPage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [data]);
+
+  // Lock body scroll when mobile navigation drawer is open
+  useEffect(() => {
+    if (isMobileNavOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileNavOpen]);
+
+  // Close mobile nav on escape key press
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileNavOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
+
+  // Automatically close mobile drawer when tab changes
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [activeTab]);
 
   // Handle Logout
   const handleLogout = async () => {
@@ -346,34 +376,53 @@ export default function AdminDashboardPage() {
       {/* ========================================================
           STICKY TOP HEADER
           ======================================================== */}
-      <header className="sticky top-0 z-30 bg-[#120F10]/90 backdrop-blur-2xl border-b border-white/10 px-4 sm:px-6 lg:px-8 py-3.5 shadow-xl transition-all">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-40 bg-[#120F10]/95 backdrop-blur-2xl border-b border-white/10 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 shadow-xl transition-all">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Brand & Title */}
-          <div className="flex items-center gap-3 min-w-0">
-            <Link href="/" title="Gå til forsiden" className="shrink-0 group">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Mobile Drawer Toggle (visible < md) */}
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+              className="md:hidden p-2 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 text-zinc-300 hover:text-white flex items-center justify-center transition-all shrink-0"
+              aria-label={isMobileNavOpen ? "Luk sektionsmenu" : "Åbn sektionsmenu"}
+              aria-expanded={isMobileNavOpen}
+            >
+              {isMobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+
+            <Link href="/" title="Gå til forsiden" className="shrink-0 group flex items-center">
               <img
                 src="/images/cafeemil-logo.png"
                 alt="Café Emil"
-                className="h-9 sm:h-10 w-auto drop-shadow-[0_2px_10px_rgba(215,42,22,0.4)] group-hover:scale-105 transition-transform"
+                className="h-7 sm:h-9 w-auto drop-shadow-[0_2px_10px_rgba(215,42,22,0.4)] group-hover:scale-105 transition-transform"
               />
             </Link>
+            
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest text-amber-400 truncate">
-                  CMS Kontrolpanel
+                  CMS
                 </span>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0 ${
+                  className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0 ${
                     storageStatus?.supabaseConnected
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                       : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
                   }`}
                 >
-                  {storageStatus?.supabaseConnected ? 'Cloud Forbundet' : 'Lokal Mode'}
+                  {storageStatus?.supabaseConnected ? 'Cloud' : 'Lokal'}
                 </span>
               </div>
-              <h1 className="text-sm sm:text-base font-black text-white truncate hidden xs:block">
+              {/* Active Tab Name on Mobile */}
+              <div className="md:hidden text-[11px] font-bold text-white flex items-center gap-1 truncate">
+                <span className="text-zinc-400 font-normal">Sektion:</span>
+                <span className="text-emil-red font-semibold truncate">
+                  {tabs.find((t) => t.id === activeTab)?.label}
+                </span>
+              </div>
+              <h1 className="text-sm sm:text-base font-black text-white truncate hidden md:block">
                 Café Emil Administration
               </h1>
             </div>
@@ -384,10 +433,10 @@ export default function AdminDashboardPage() {
             <Link
               href="/"
               target="_blank"
-              className="px-2.5 sm:px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all"
+              className="hidden sm:inline-flex px-3 sm:px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-zinc-300 hover:text-white items-center gap-1.5 transition-all"
               title="Åbn websitet i ny fane"
             >
-              <span className="hidden sm:inline">Se Site</span>
+              <span>Se Site</span>
               <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
             </Link>
 
@@ -400,7 +449,7 @@ export default function AdminDashboardPage() {
               {saving ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Gemmer...</span>
+                  <span className="hidden xs:inline">Gemmer...</span>
                 </>
               ) : (
                 <>
@@ -423,6 +472,108 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </header>
+
+      {/* ========================================================
+          RESPONSIVE MOBILE NAVIGATION DRAWER
+          ======================================================== */}
+      {isMobileNavOpen && (
+        <div
+          onClick={() => setIsMobileNavOpen(false)}
+          className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 animate-in fade-in duration-200"
+          aria-hidden="true"
+        />
+      )}
+
+      {isMobileNavOpen && (
+        <aside
+          role="dialog"
+          aria-modal="true"
+          className="md:hidden fixed top-0 left-0 bottom-0 w-[280px] sm:w-[320px] bg-[#120F10] border-r border-white/15 z-50 p-5 flex flex-col justify-between shadow-2xl animate-in slide-in-from-left duration-200"
+        >
+          <div className="space-y-4">
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <img
+                  src="/images/cafeemil-logo.png"
+                  alt="Café Emil"
+                  className="h-7 w-auto drop-shadow"
+                />
+                <div>
+                  <div className="text-xs font-bold text-white">CMS Sektioner</div>
+                  <div className="text-[10px] text-zinc-400">10 administrationsmoduler</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(false)}
+                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white"
+                aria-label="Luk menu"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Sektioner List */}
+            <div className="space-y-1 max-h-[calc(100vh-14rem)] overflow-y-auto pr-1 no-scrollbar">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.id as AdminTab);
+                      setIsMobileNavOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left ${
+                      isActive
+                        ? 'bg-gradient-to-r from-red-600 to-emil-red text-white shadow-md shadow-red-600/30'
+                        : 'text-zinc-300 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{tab.label}</span>
+                    </div>
+                    {tab.count !== null && (
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${
+                          isActive ? 'bg-black/30 text-white' : 'bg-white/10 text-zinc-300'
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Drawer Footer */}
+          <div className="pt-3 border-t border-white/10 space-y-2">
+            <Link
+              href="/"
+              target="_blank"
+              className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white flex items-center justify-between transition-all"
+            >
+              <span>Gå til Website</span>
+              <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-semibold text-red-300 hover:text-red-200 flex items-center justify-between transition-all"
+            >
+              <span>Log ud</span>
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </aside>
+      )}
 
       {/* ========================================================
           MAIN CONTENT CONTAINER
@@ -492,7 +643,7 @@ export default function AdminDashboardPage() {
         <div className="relative">
           <nav
             aria-label="CMS sektioner"
-            className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 no-scrollbar border-b border-white/10"
+            className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 pt-1 no-scrollbar border-b border-white/10 -mx-4 px-4 sm:mx-0 sm:px-0"
           >
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -502,7 +653,7 @@ export default function AdminDashboardPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as AdminTab)}
-                  className={`px-3.5 sm:px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 whitespace-nowrap transition-all duration-200 ${
+                  className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all duration-200 shrink-0 ${
                     isActive
                       ? 'bg-gradient-to-r from-red-600 to-emil-red text-white shadow-lg shadow-red-600/30 scale-100'
                       : 'bg-[#181415] text-zinc-400 hover:text-white border border-white/10 hover:border-white/20'
