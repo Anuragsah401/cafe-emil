@@ -4,6 +4,7 @@
   "description": "Node.js, Express and Supabase backend server for Café Emil website",
   "main": "index.js",
   "scripts": {
+    "build": "echo 'Backend ready'",
     "start": "node index.js",
     "dev": "node --watch index.js",
     "seed": "node seed.js"
