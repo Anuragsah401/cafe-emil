@@ -827,7 +827,7 @@
     ],
     "streetAddress": "Annexstræde 3",
     "indoorCapacity": 130,
-    "seatBookingUrl": "https://cafeemil.dk/book-bord",
+    "seatBookingUrl": "https://seatbooking.dk",
     "outdoorCapacity": 80,
     "phoneInternational": "+45 36 44 74 41",
     "seatBookingEngineId": "cafe-emil-valby"

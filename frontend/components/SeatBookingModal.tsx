@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar, Clock, Users, Phone, ExternalLink, X, CheckCircle, Flame } from 'lucide-react';
+import { Calendar, Phone, ExternalLink, X, Flame } from 'lucide-react';
 import { RestaurantInfo } from '@/lib/cms';
 
 interface SeatBookingModalProps {
@@ -18,21 +18,11 @@ export default function SeatBookingModal({
   restaurant,
   bookingNotice,
 }: SeatBookingModalProps) {
-  const [guests, setGuests] = useState('2');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('18:00');
-  const [submitted, setSubmitted] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // Ensure portal only mounts client-side
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  // Initialize date to today's YYYY-MM-DD
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    setDate(today);
   }, []);
 
   // Prevent background body scroll while modal is active
@@ -61,25 +51,13 @@ export default function SeatBookingModal({
 
   // Defensive data fallbacks
   const restName = restaurant?.name || 'Café Emil';
-  const restPhone = restaurant?.phone || '36 44 74 56';
+  const restPhone = restaurant?.phone || '36 44 74 41';
   const cleanPhone = String(restPhone).replace(/\s+/g, '');
-  const baseUrl = restaurant?.seatBookingUrl || 'https://cafeemil.dk/book-bord';
+  const targetBookingUrl =
+    restaurant?.seatBookingUrl && !restaurant.seatBookingUrl.includes('cafeemil.dk/book-bord')
+      ? restaurant.seatBookingUrl
+      : 'https://seatbooking.dk';
   const notice = bookingNotice || `Ring gerne direkte på ${restPhone}.`;
-
-  const handleProceedSeatBooking = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams({
-      guests,
-      date,
-      time,
-      source: 'cafeemil-web',
-    });
-    const targetUrl = baseUrl.includes('?')
-      ? `${baseUrl}&${params.toString()}`
-      : `${baseUrl}?${params.toString()}`;
-    window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    setSubmitted(true);
-  };
 
   const modalContent = (
     <div
@@ -116,128 +94,62 @@ export default function SeatBookingModal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto no-scrollbar">
-          {submitted ? (
-            <div className="text-center py-8 space-y-4">
-              <div className="w-16 h-16 mx-auto bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-emerald-400" />
-              </div>
-              <h4 className="text-xl font-bold text-white">Videresender til SeatBooking</h4>
-              <p className="text-xs text-zinc-300 max-w-md mx-auto leading-relaxed">
-                Vi har åbnet SeatBooking med dine valg ({guests} personer, den {date} kl. {time}). Bekræft din reservation i det åbnede vindue.
-              </p>
-              <div className="pt-4 flex justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSubmitted(false)}
-                  className="px-5 py-2.5 rounded-full border border-white/15 text-xs font-semibold text-white hover:bg-white/10 transition-colors"
-                >
-                  Juster valg
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-5 py-2.5 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-extrabold text-xs uppercase shadow-md shadow-red-600/30 transition-colors"
-                >
-                  Luk vindue
-                </button>
-              </div>
+        <div className="p-6 space-y-5 overflow-y-auto no-scrollbar">
+          {/* Main Card with Official Partner Text */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/15 text-center space-y-3.5 shadow-inner">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-red-600/25 to-emil-red/10 border border-red-500/30 flex items-center justify-center text-red-400 shadow-lg shadow-red-600/20">
+              <Calendar className="w-7 h-7 text-red-400" />
             </div>
-          ) : (
-            <form onSubmit={handleProceedSeatBooking} className="space-y-4">
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                Vælg antal gæster, dato og tid. Du viderestilles direkte til vores SeatBooking-system for omgående bekræftelse.
+
+            <div className="space-y-1.5">
+              <h4 className="text-base sm:text-lg font-bold text-white leading-snug">
+                Reserver bord via vores officielle bookingsystem partner{' '}
+                <span className="text-red-400 font-extrabold underline decoration-red-500/40 underline-offset-4">
+                  seatbooking.dk
+                </span>
+              </h4>
+              <p className="text-xs text-zinc-300 max-w-sm mx-auto leading-relaxed">
+                Reserve table using official booking engine/system partner{' '}
+                <span className="font-semibold text-white">seatbooking.dk</span> for hurtig og direkte bekræftelse af dit bord.
               </p>
+            </div>
+          </div>
 
-              {/* Guest Count */}
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1.5 flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>Antal gæster</span>
-                </label>
-                <select
-                  value={guests}
-                  onChange={(e) => setGuests(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl border border-white/15 bg-[#100D0E] text-white focus:outline-none focus:border-emil-red text-xs font-semibold"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, '11-20 (Selskab)', '20+ (Større arrangement)'].map((opt) => (
-                    <option key={opt} value={opt} className="bg-[#181416] text-white">
-                      {typeof opt === 'number' ? `${opt} ${opt === 1 ? 'person' : 'personer'}` : opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Primary Action Button */}
+          <div>
+            <a
+              href={targetBookingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4 px-6 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-xl shadow-red-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+            >
+              <span>Gå til seatbooking.dk</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
 
-              {/* Date & Time Row */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1.5 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-                    <span>Dato</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3.5 py-3 rounded-2xl border border-white/15 bg-[#100D0E] text-white focus:outline-none focus:border-emil-red text-xs font-semibold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1.5 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                    <span>Tidspunkt</span>
-                  </label>
-                  <select
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="w-full px-3.5 py-3 rounded-2xl border border-white/15 bg-[#100D0E] text-white focus:outline-none focus:border-emil-red text-xs font-semibold"
-                  >
-                    {[
-                      '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-                      '14:00', '14:30', '15:00', '16:00', '17:00', '17:30', '18:00',
-                      '18:30', '19:00', '19:30', '20:00', '20:30', '21:00'
-                    ].map((t) => (
-                      <option key={t} value={t} className="bg-[#181416] text-white">{t}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+          {/* Weekend & Groups Notice */}
+          <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-zinc-300 flex items-start gap-2.5">
+            <Phone className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-white mb-0.5">Fredag/Lørdag &amp; større grupper:</p>
+              <p className="text-[11px] text-zinc-300 leading-relaxed">{notice}</p>
+            </div>
+          </div>
 
-              {/* Weekend Notice */}
-              <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-zinc-300 flex items-start gap-2.5">
-                <Phone className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-white mb-0.5">Fredag/Lørdag &amp; større grupper:</p>
-                  <p className="text-[11px] text-zinc-300 leading-relaxed">{notice}</p>
-                </div>
-              </div>
-
-              {/* Submit CTA */}
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  className="w-full py-4 px-6 rounded-full bg-emil-red hover:bg-emil-redHover text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-xl shadow-red-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-                >
-                  <span>Fortsæt til SeatBooking</span>
-                  <ExternalLink className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Phone fallback */}
-              <div className="text-center pt-2 border-t border-white/10">
-                <p className="text-[11px] text-zinc-400">
-                  Foretrækker du telefonisk reservation?{' '}
-                  <a
-                    href={`tel:${cleanPhone}`}
-                    className="font-bold text-zinc-200 hover:text-white hover:underline transition-colors ml-1"
-                  >
-                    Ring på {restPhone}
-                  </a>
-                </p>
-              </div>
-            </form>
-          )}
+          {/* Direct Phone Reservation */}
+          <div className="text-center pt-2 border-t border-white/10">
+            <p className="text-[11px] text-zinc-400">
+              Foretrækker du telefonisk reservation?{' '}
+              <a
+                href={`tel:${cleanPhone}`}
+                className="font-bold text-zinc-200 hover:text-white hover:underline transition-colors ml-1 inline-flex items-center gap-1"
+              >
+                <Phone className="w-3 h-3 text-red-400" />
+                <span>Ring på {restPhone}</span>
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>
