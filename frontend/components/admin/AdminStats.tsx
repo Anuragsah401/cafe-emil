@@ -105,3 +105,4 @@ export default function AdminStats({ data, storageStatus, onSelectTab }: AdminSt
     </div>
   );
 }
+

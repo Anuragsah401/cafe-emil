@@ -41,7 +41,6 @@ import {
 import ImageUploader from '@/components/admin/ImageUploader';
 import MediaLibrary from '@/components/admin/MediaLibrary';
 import AdminStats from '@/components/admin/AdminStats';
-import AdminStickyBar from '@/components/admin/AdminStickyBar';
 import {
   CmsData,
   MenuItem,
@@ -342,7 +341,7 @@ export default function AdminDashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0D0B0C] text-zinc-100 selection:bg-emil-red selection:text-white pb-32">
+    <div className="min-h-screen bg-[#0D0B0C] text-zinc-100 selection:bg-emil-red selection:text-white pb-16">
       
       {/* ========================================================
           STICKY TOP HEADER
@@ -2107,16 +2106,6 @@ export default function AdminDashboardPage() {
         )}
 
       </main>
-
-      {/* ========================================================
-          FLOATING STICKY ACTION BAR (Always Accessible)
-          ======================================================== */}
-      <AdminStickyBar
-        saving={saving}
-        onSave={handleSave}
-        hasUnsavedChanges={hasUnsavedChanges}
-        lastSaved={lastSaved}
-      />
     </div>
   );
 }
