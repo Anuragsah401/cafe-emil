@@ -148,13 +148,16 @@ export default function Navbar({ restaurant }: NavbarProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3.5 lg:px-4 py-2 rounded-full transition-all duration-200 ${
+                  className={`group relative px-4 py-2 rounded-full transition-all duration-200 ease-out border ${
                     isActive
-                      ? 'bg-emil-red text-white font-bold shadow-md shadow-red-600/30'
-                      : 'text-zinc-100 hover:text-white hover:bg-white/12 active:scale-95'
+                      ? 'bg-gradient-to-r from-red-600 to-emil-red text-white font-bold shadow-lg shadow-red-600/40 border-red-500/40 hover:brightness-110 hover:-translate-y-0.5'
+                      : 'border-transparent text-zinc-100 hover:text-white hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_18px_rgba(255,255,255,0.15)] hover:-translate-y-0.5 active:scale-95'
                   }`}
                 >
-                  {link.label}
+                  <span className="relative z-10 transition-colors group-hover:text-white font-bold">{link.label}</span>
+                  {!isActive && (
+                    <span className="absolute inset-x-3.5 bottom-1.5 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full" />
+                  )}
                 </Link>
               );
             })}
