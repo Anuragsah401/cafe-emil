@@ -67,6 +67,7 @@ export default async function MenuPage() {
           categories={cms.menuCategories}
           items={cms.menuItems}
           initialCategory="alle"
+          restaurant={cms.restaurant}
         />
 
         {/* Allergen & Dietary Information Footer */}

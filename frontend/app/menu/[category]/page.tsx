@@ -111,6 +111,7 @@ export default async function CategoryMenuPage({ params }: CategoryPageProps) {
           items={cms.menuItems}
           initialCategory={cat.id}
           showCategoryNavLinks={false}
+          restaurant={cms.restaurant}
         />
 
         {/* Call To Action Box */}
