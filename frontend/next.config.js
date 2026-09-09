@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+      },
     ],
   },
   // Ensure trailingSlash can match or redirect cleanly without losing authority

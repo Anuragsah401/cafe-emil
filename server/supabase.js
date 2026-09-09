@@ -3,9 +3,15 @@ const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
 
-const SUPABASE_URL = process.env.SUPABASE_URL || "";
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || "";
-const BUCKET_NAME = process.env.SUPABASE_BUCKET || "cafe-emil-images";
+const rawSupabaseUrl = (process.env.SUPABASE_URL || "").trim();
+const SUPABASE_URL = rawSupabaseUrl.replace(/\/rest\/v1\/?$/, "").replace(/\/+$/, "");
+const SUPABASE_KEY = (
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  ""
+).trim();
+const BUCKET_NAME = (process.env.SUPABASE_BUCKET || "cafe-emil-images").trim();
 
 let supabaseClient = null;
 
@@ -101,7 +107,12 @@ async function saveCmsData(newData) {
 
   // Also sync to local file if writable
   try {
-    fs.writeFileSync(rootCmsPath, JSON.stringify(updated, null, 2), "utf8");
+    if (fs.existsSync(serverCmsPath)) {
+      fs.writeFileSync(serverCmsPath, JSON.stringify(updated, null, 2), "utf8");
+    }
+    if (fs.existsSync(frontendCmsPath)) {
+      fs.writeFileSync(frontendCmsPath, JSON.stringify(updated, null, 2), "utf8");
+    }
   } catch (e) {
     // Non-fatal if filesystem is read-only
   }
