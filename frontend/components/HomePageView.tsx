@@ -332,7 +332,7 @@ export default function HomePageView({ cms }: HomePageViewProps) {
               <div
                 key={dish.id}
                 onClick={() => setSelectedDish(dish)}
-                className="animate-fade-in bg-yumix-card rounded-3xl p-5 border border-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1 group flex flex-col justify-between shadow-xl cursor-pointer"
+                className="animate-fade-in bg-yumix-card rounded-3xl p-5 border border-white/10 hover:border-white/20 transition-all duration-300 ease-spring hover:-translate-y-1 active:scale-[0.98] group flex flex-col justify-between shadow-xl cursor-pointer select-none"
               >
                 <div>
                   {/* Photo container */}
@@ -342,8 +342,17 @@ export default function HomePageView({ cms }: HomePageViewProps) {
                       alt={dish.name}
                       loading="lazy"
                       decoding="async"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                     />
+
+                    {/* Quick Hover Pill Prompt */}
+                    <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                      <span className="px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-[11px] font-bold text-white tracking-wide shadow-xl transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-amber-300" />
+                        <span>Se detaljer</span>
+                      </span>
+                    </div>
+
                     <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-amber-400 flex items-center gap-1 border border-white/10">
                       <Star className="w-3 h-3 fill-current text-amber-400" />
                       <span>4.9</span>

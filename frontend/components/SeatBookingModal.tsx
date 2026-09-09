@@ -19,35 +19,61 @@ export default function SeatBookingModal({
   bookingNotice,
 }: SeatBookingModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [isRendered, setIsRendered] = useState(false);
+  const [isAnimatedIn, setIsAnimatedIn] = useState(false);
 
   // Ensure portal only mounts client-side
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Prevent background body scroll while modal is active
+  // Handle open / close lifecycle transitions with smooth spring easing
   useEffect(() => {
-    if (!isOpen) return;
+    let animTimer: NodeJS.Timeout;
+    if (isOpen) {
+      setIsRendered(true);
+      animTimer = setTimeout(() => {
+        setIsAnimatedIn(true);
+      }, 20);
+    } else {
+      setIsAnimatedIn(false);
+      animTimer = setTimeout(() => {
+        setIsRendered(false);
+      }, 280);
+    }
+    return () => clearTimeout(animTimer);
+  }, [isOpen]);
+
+  // Prevent background body scroll while modal is rendered
+  useEffect(() => {
+    if (!isRendered) return;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = originalOverflow;
     };
-  }, [isOpen]);
+  }, [isRendered]);
+
+  const handleClose = () => {
+    setIsAnimatedIn(false);
+    setTimeout(() => {
+      onClose();
+    }, 240);
+  };
 
   // Handle Escape key to dismiss modal
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isRendered) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isRendered]);
 
-  if (!isOpen || !mounted) return null;
+  if (!isRendered || !mounted) return null;
 
   // Defensive data fallbacks
   const restName = restaurant?.name || 'Café Emil';
@@ -61,12 +87,20 @@ export default function SeatBookingModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200"
-      onClick={onClose}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto transition-all duration-300 ease-out ${
+        isAnimatedIn
+          ? 'bg-black/80 backdrop-blur-md opacity-100'
+          : 'bg-black/0 backdrop-blur-none opacity-0 pointer-events-none'
+      }`}
+      onClick={handleClose}
       role="presentation"
     >
       <div
-        className="relative w-full max-w-lg bg-[#181416] rounded-3xl shadow-2xl border border-white/20 overflow-hidden text-white my-auto flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200"
+        className={`relative w-full max-w-lg bg-[#181416] rounded-3xl shadow-2xl border border-white/20 overflow-hidden text-white my-auto flex flex-col max-h-[92vh] transition-all duration-350 ease-spring transform will-change-transform ${
+          isAnimatedIn
+            ? 'opacity-100 scale-100 translate-y-0'
+            : 'opacity-0 scale-95 translate-y-4 sm:translate-y-6'
+        }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="booking-modal-heading"
@@ -85,7 +119,7 @@ export default function SeatBookingModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="text-zinc-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
             aria-label="Luk vindue"
           >

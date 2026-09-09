@@ -327,7 +327,7 @@ export default function MenuBrowser({
                       <article
                         key={dish.id}
                         onClick={() => setSelectedDish(dish)}
-                        className="group relative bg-gradient-to-b from-[#1c1517] to-[#130e10] rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-white/25 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between shadow-xl hover:shadow-2xl hover:shadow-red-950/20 overflow-hidden cursor-pointer"
+                        className="group relative bg-gradient-to-b from-[#1c1517] to-[#130e10] rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-white/25 hover:shadow-2xl hover:shadow-red-950/20 transition-all duration-300 ease-spring hover:-translate-y-1.5 active:scale-[0.98] flex flex-col justify-between shadow-xl overflow-hidden cursor-pointer select-none"
                       >
                         <div>
                           {/* Dish Image Container (if available) */}
@@ -338,9 +338,17 @@ export default function MenuBrowser({
                                 alt={dish.name}
                                 loading="lazy"
                                 decoding="async"
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+
+                              {/* Quick Hover Pill Prompt */}
+                              <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                                <span className="px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-[11px] font-bold text-white tracking-wide shadow-xl transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 flex items-center gap-1.5">
+                                  <Sparkles className="w-3 h-3 text-amber-300" />
+                                  <span>Se detaljer</span>
+                                </span>
+                              </div>
 
                               {/* Price Pill Overlaid on Photo */}
                               <div className="absolute top-3 right-3 bg-[#100D0E]/85 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-black font-mono text-amber-300 border border-amber-400/30 shadow-lg flex items-center gap-1">

@@ -62,6 +62,9 @@ module.exports = {
         "3xl": "1.5rem",
         "4xl": "2rem",
       },
+      transitionTimingFunction: {
+        spring: "cubic-bezier(0.16, 1, 0.3, 1)",
+      },
     },
   },
   plugins: [],

@@ -34,34 +34,61 @@ export default function DishDetailModal({
   restaurantPhone = '36 44 74 41',
 }: DishDetailModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [isRendered, setIsRendered] = useState(false);
+  const [isAnimatedIn, setIsAnimatedIn] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Lock background scroll when modal is open
+  // Handle open / close lifecycle transitions with smooth spring easing
   useEffect(() => {
-    if (!isOpen) return;
+    let animTimer: NodeJS.Timeout;
+    if (isOpen) {
+      setIsRendered(true);
+      // Double RAF / small timeout to ensure DOM registers initial style before transitioning
+      animTimer = setTimeout(() => {
+        setIsAnimatedIn(true);
+      }, 20);
+    } else {
+      setIsAnimatedIn(false);
+      animTimer = setTimeout(() => {
+        setIsRendered(false);
+      }, 280);
+    }
+    return () => clearTimeout(animTimer);
+  }, [isOpen]);
+
+  // Lock background scroll when modal is rendered
+  useEffect(() => {
+    if (!isRendered) return;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = originalOverflow;
     };
-  }, [isOpen]);
+  }, [isRendered]);
 
-  // Handle ESC key to close
+  const handleClose = () => {
+    setIsAnimatedIn(false);
+    setTimeout(() => {
+      onClose();
+    }, 240);
+  };
+
+  // Handle ESC key to smoothly close
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isRendered) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isRendered]);
 
-  if (!isOpen || !mounted || !dish) return null;
+  if (!isRendered || !mounted || !dish) return null;
 
   const cleanPhone = restaurantPhone.replace(/\s+/g, '');
   const hasImage = Boolean(dish.image && dish.image.trim().length > 0);
@@ -71,12 +98,20 @@ export default function DishDetailModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200"
-      onClick={onClose}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto transition-all duration-300 ease-out ${
+        isAnimatedIn
+          ? 'bg-black/80 backdrop-blur-md opacity-100'
+          : 'bg-black/0 backdrop-blur-none opacity-0 pointer-events-none'
+      }`}
+      onClick={handleClose}
       role="presentation"
     >
       <div
-        className="relative w-full max-w-xl bg-gradient-to-b from-[#1c1517] to-[#120d0f] rounded-3xl shadow-2xl border border-white/20 overflow-hidden text-white my-auto flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200"
+        className={`relative w-full max-w-xl bg-gradient-to-b from-[#1c1517] via-[#161012] to-[#110d0e] rounded-3xl shadow-2xl border border-white/20 overflow-hidden text-white my-auto flex flex-col max-h-[92vh] transition-all duration-350 ease-spring transform will-change-transform ${
+          isAnimatedIn
+            ? 'opacity-100 scale-100 translate-y-0'
+            : 'opacity-0 scale-95 translate-y-4 sm:translate-y-6'
+        }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="dish-detail-heading"
@@ -87,15 +122,17 @@ export default function DishDetailModal({
           <img
             src={displayImage}
             alt={dish.name}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition-transform duration-700 ease-out ${
+              isAnimatedIn ? 'scale-100' : 'scale-108'
+            }`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1c1517] via-transparent to-black/60" />
 
           {/* Close Button Top Right */}
           <button
             type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/80 hover:text-white transition-all active:scale-90 cursor-pointer shadow-lg z-10"
+            onClick={handleClose}
+            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 hover:bg-black/85 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/80 hover:text-white transition-all active:scale-90 hover:rotate-90 duration-200 cursor-pointer shadow-lg z-10"
             aria-label="Luk"
           >
             <X className="w-5 h-5" />
@@ -193,9 +230,11 @@ export default function DishDetailModal({
             <button
               type="button"
               onClick={() => {
-                onClose();
+                handleClose();
                 if (onBookTable) {
-                  onBookTable();
+                  setTimeout(() => {
+                    onBookTable();
+                  }, 240);
                 }
               }}
               className="w-full py-4 px-6 rounded-full bg-gradient-to-r from-red-600 to-emil-red hover:from-red-500 hover:to-red-600 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-xl shadow-red-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
@@ -223,3 +262,4 @@ export default function DishDetailModal({
 
   return createPortal(modalContent, document.body);
 }
+
