@@ -148,59 +148,37 @@ export default function AmbientSoundPlayer() {
     }
   }, [volume, isMuted]);
 
-  // Audio Play with Smooth Fade-in
+  // Audio Play with target volume
   const playAudio = () => {
     if (!audioRef.current) return;
 
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
-    const targetVol = isMuted ? 0 : volume;
-    audioRef.current.volume = 0;
-    
-    const playPromise = audioRef.current.play();
+    const targetVol = isMuted ? 0 : (volume > 0 ? volume : 0.35);
+    const audio = audioRef.current;
+    audio.volume = targetVol;
+
+    const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
           setIsPlaying(true);
           setShowInvitation(false);
           localStorage.setItem('cafeemil_sound_dismissed', 'true');
-
-          // Smooth fade in over 400ms
-          let currentFadeVol = 0;
-          const step = Math.max(0.02, targetVol / 8);
-          fadeIntervalRef.current = setInterval(() => {
-            currentFadeVol = Math.min(targetVol, currentFadeVol + step);
-            if (audioRef.current) audioRef.current.volume = currentFadeVol;
-            if (currentFadeVol >= targetVol) {
-              if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
-            }
-          }, 40);
         })
         .catch((err) => {
-          console.log('Audio playback prevented or interrupted:', err);
+          console.warn('Audio playback error:', err);
         });
     }
   };
 
-  // Audio Pause with Smooth Fade-out
+  // Audio Pause
   const pauseAudio = () => {
     if (!audioRef.current) return;
 
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
-
-    const startVol = audioRef.current.volume;
-    let currentFadeVol = startVol;
-    const step = startVol / 8;
-
-    fadeIntervalRef.current = setInterval(() => {
-      currentFadeVol = Math.max(0, currentFadeVol - step);
-      if (audioRef.current) audioRef.current.volume = currentFadeVol;
-      if (currentFadeVol <= 0) {
-        if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
-        if (audioRef.current) audioRef.current.pause();
-        setIsPlaying(false);
-      }
-    }, 40);
+    audioRef.current.pause();
+    setIsPlaying(false);
   };
 
   const togglePlay = () => {
@@ -216,14 +194,42 @@ export default function AmbientSoundPlayer() {
     setCurrentTrackIndex(index);
     localStorage.setItem('cafeemil_sound_track', TRACKS[index].id);
 
-    if (audioRef.current) {
-      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
-      audioRef.current.pause();
-      audioRef.current.src = TRACKS[index].src;
-      audioRef.current.currentTime = 0;
-      audioRef.current.load();
-      // Directly play new track
-      playAudio();
+    const targetTrack = TRACKS[index];
+    if (!targetTrack || !audioRef.current) return;
+
+    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+
+    const audio = audioRef.current;
+    const targetVol = isMuted ? 0 : (volume > 0 ? volume : 0.35);
+
+    // Pause previous sound, update source and volume
+    audio.pause();
+    audio.src = targetTrack.src;
+    audio.currentTime = 0;
+    audio.volume = targetVol;
+
+    // Immediately trigger playback since user clicked a track
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+          setShowInvitation(false);
+        })
+        .catch(() => {
+          // If the audio buffer needs a moment to load, play on canplay event
+          const handleCanPlay = () => {
+            audio.removeEventListener('canplay', handleCanPlay);
+            audio
+              .play()
+              .then(() => {
+                setIsPlaying(true);
+                setShowInvitation(false);
+              })
+              .catch(() => {});
+          };
+          audio.addEventListener('canplay', handleCanPlay, { once: true });
+        });
     }
   };
 
