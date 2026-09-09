@@ -240,18 +240,18 @@ export default function Navbar({ restaurant }: NavbarProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`group flex items-center justify-between p-2.5 rounded-2xl transition-all ${
+                  className={`group relative flex items-center justify-between p-2.5 rounded-2xl transition-all duration-200 border overflow-hidden ${
                     isActive
-                      ? 'border border-white/20 text-white'
-                      : 'hover:bg-white/5 border border-transparent text-zinc-300 hover:text-white'
+                      ? 'text-white bg-white/10 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                      : 'text-zinc-300 border-transparent hover:text-white hover:bg-white/10 hover:border-white/15 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-[0.98]'
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0 relative z-10">
                     <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                         isActive
-                          ? 'bg-white/15 text-white'
-                          : 'bg-white/5 text-zinc-400 group-hover:bg-white/10 group-hover:text-white'
+                          ? 'bg-white/20 text-white shadow-sm'
+                          : 'bg-white/5 text-zinc-400 group-hover:bg-white/15 group-hover:text-white'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -260,15 +260,22 @@ export default function Navbar({ restaurant }: NavbarProps) {
                       <div className="text-xs font-bold tracking-tight text-white group-hover:text-white">
                         {link.label}
                       </div>
-                      <div className="text-[10px] text-zinc-400 truncate">
+                      <div className="text-[10px] text-zinc-400 group-hover:text-zinc-300 truncate">
                         {link.sub}
                       </div>
                     </div>
                   </div>
 
                   <ChevronRight
-                    className={`w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5 ${
-                      isActive ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300'
+                    className={`w-4 h-4 shrink-0 transition-transform relative z-10 ${
+                      isActive ? 'text-white translate-x-0.5' : 'text-zinc-500 group-hover:text-white group-hover:translate-x-0.5'
+                    }`}
+                  />
+
+                  {/* Subtle bottom indicator beam matching f00a1ef */}
+                  <span
+                    className={`absolute inset-x-6 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-white/50 to-transparent transition-opacity duration-200 rounded-full ${
+                      isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                     }`}
                   />
                 </Link>
